@@ -5,17 +5,26 @@ import { SmartImage } from "@/components/UI/SmartImage";
 export function Hero() {
   return (
     <section className="relative isolate min-h-[680px] overflow-hidden bg-navy-dark text-white">
-      <SmartImage
-        src="/images/campus.jpg"
-        alt="St. Joseph's High School campus"
-        className="absolute inset-0 -z-20 h-full w-full object-cover"
-        fallbackLabel="Campus"
-        priority
-      />
+      <div className="absolute inset-0 -z-20 grid grid-cols-2">
+        <SmartImage
+          src="/images/campus.jpg"
+          alt="St. Joseph's High School main campus building"
+          className="h-full w-full object-cover object-center"
+          fallbackLabel="Main Campus"
+          priority
+        />
+        <SmartImage
+          src="/images/campus-right.jpg"
+          alt="St. Joseph's High School front building"
+          className="h-full w-full object-cover object-center"
+          fallbackLabel="School Building"
+          priority
+        />
+      </div>
       <div className="absolute inset-0 -z-10 bg-gradient-to-r from-navy-dark via-navy-dark/78 to-navy/20" />
       <div className="absolute inset-x-0 bottom-0 -z-10 h-40 bg-gradient-to-t from-navy-dark to-transparent" />
 
-      <div className="site-container grid min-h-[680px] items-center gap-12 py-24 lg:grid-cols-[1.05fr_0.75fr]">
+      <div className="site-container flex min-h-[680px] items-center py-24">
         <div className="max-w-3xl">
           <h1 className="text-balance text-5xl font-bold tracking-tight md:text-7xl">
             {homeCopy.mainHeading}
@@ -39,16 +48,6 @@ export function Hero() {
             >
               Schedule a Campus Visit / Contact Administration
             </Link>
-          </div>
-        </div>
-        <div className="hidden justify-self-end lg:block">
-          <div className="overflow-hidden rounded-lg border border-white/20 bg-white/10 p-2 shadow-2xl backdrop-blur-sm">
-            <SmartImage
-              src="/images/campus-right.jpg"
-              alt="St. Joseph's High School building front view"
-              className="aspect-[4/5] w-[360px] rounded-md object-cover object-center xl:w-[420px]"
-              fallbackLabel="School Building"
-            />
           </div>
         </div>
       </div>
