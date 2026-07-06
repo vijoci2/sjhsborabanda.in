@@ -39,10 +39,11 @@ export default function Home() {
               description="Guided by experienced academic and administrative leadership."
             />
             <p className="text-lg leading-8 text-slate-600">
-              Mrs. Kakumanu Nirmala Mary, B.Sc., B.Ed., leads the school's
-              daily academic operations with passion and dedication. Alongside
-              the Director and Correspondent, she helps maintain an inspiring,
-              inclusive, and highly disciplined learning environment.
+              Mr. Maram Vijaya Prasad serves as Principal and Correspondent,
+              guiding the school's academic operations, administration, and
+              strategic growth. Vice Principal Kakumanu Nirmala Mary supports
+              daily academic discipline and student care, helping maintain an
+              inspiring, inclusive, and highly disciplined learning environment.
             </p>
             <Link
               href="/about#leadership"

@@ -226,14 +226,14 @@ export const galleryItems = [
     image: "/images/classrooms/classroom.jpg"
   },
   {
-    title: "Celebrations",
-    category: "Celebrations",
-    image: "/images/gallery/gallery-1.jpg"
+    title: "School Building",
+    category: "Campus",
+    image: "/images/gallery/building-top.jpg"
   },
   {
     title: "Campus",
     category: "Campus",
-    image: "/images/campus.jpg"
+    image: "/images/gallery/building-main.jpg"
   },
   {
     title: "Library",
@@ -280,7 +280,7 @@ export const facilities = [
   },
   {
     title: "Safe Campus",
-    image: "/images/gallery/gallery-1.jpg",
+    image: "/images/gallery/building-top.jpg",
     description:
       "Visitor awareness, supervision, and clear routines help keep the campus orderly and caring."
   }
@@ -315,11 +315,18 @@ export const historyTimeline = [
 
 export const leadershipTeam = [
   {
-    name: "Mrs. Kakumanu Nirmala Mary, B.Sc., B.Ed.",
-    role: "Principal",
+    name: "Mr. Maram Vijaya Prasad",
+    role: "Principal & Correspondent",
     image: "/images/principal.jpg",
     bio:
-      "Leading the school's daily academic operations with passion and dedication, our Principal brings a rich background in science and professional pedagogy to the institution. Under her active guidance, St. Joseph's High School maintains an inspiring, inclusive, and highly disciplined learning environment, ensuring that our legacy of academic dedication is reflected in every classroom, every single day."
+      "As Principal and Correspondent, Mr. Maram Vijaya Prasad guides the school's academic operations, management, and strategic growth with a disciplined educational vision. His leadership supports faculty development, campus infrastructure, and a focused learning environment where students have what they need to thrive."
+  },
+  {
+    name: "Kakumanu Nirmala Mary",
+    role: "Vice Principal",
+    image: "/images/vice-principal.jpg",
+    bio:
+      "As Vice Principal, Kakumanu Nirmala Mary supports daily academic discipline, classroom coordination, student care, and parent communication. Her steady guidance helps keep the school environment organized, inclusive, and focused on meaningful learning."
   },
   {
     name: "Mr. M. Vijoci Dev, B.Tech., B.Ed.",
@@ -327,13 +334,6 @@ export const leadershipTeam = [
     image: "/images/gallery/gallery-3.jpg",
     bio:
       "Bringing a progressive edge to our school's leadership, our present Director bridges modern technology with traditional educational values. With his dual background in Engineering and Education, he steers the school's long-term vision, driving the integration of digital learning tools, logical thinking, and innovative teaching methods into our established curriculum."
-  },
-  {
-    name: "Mr. Maram Vijaya Prasad, M.Sc., B.Ed.",
-    role: "Correspondent",
-    image: "/images/gallery/gallery-2.jpg",
-    bio:
-      "As Correspondent, Mr. Maram Vijaya Prasad handles management and strategic growth with an advanced academic perspective. His roots in higher science and education support school infrastructure, faculty development, and a learning environment where students have what they need to thrive."
   }
 ];
 
