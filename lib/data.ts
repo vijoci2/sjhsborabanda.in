@@ -329,11 +329,11 @@ export const leadershipTeam = [
       "As Vice Principal, Kakumanu Nirmala Mary supports daily academic discipline, classroom coordination, student care, and parent communication. Her steady guidance helps keep the school environment organized, inclusive, and focused on meaningful learning."
   },
   {
-    name: "Mr. M. Vijoci Dev, B.Tech., B.Ed.",
+    name: "Mr. Maram Vijoci Dev",
     role: "Director",
-    image: "/images/gallery/gallery-3.jpg",
+    image: "/images/director.jpg",
     bio:
-      "Bringing a progressive edge to our school's leadership, our present Director bridges modern technology with traditional educational values. With his dual background in Engineering and Education, he steers the school's long-term vision, driving the integration of digital learning tools, logical thinking, and innovative teaching methods into our established curriculum."
+      "Bringing a progressive edge to our school's leadership, Mr. Maram Vijoci Dev bridges modern technology with traditional educational values. He steers the school's long-term vision, driving the integration of digital learning tools, logical thinking, and innovative teaching methods into our established curriculum."
   }
 ];
 
