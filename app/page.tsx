@@ -12,6 +12,7 @@ import {
   events,
   galleryItems,
   homeCopy,
+  leadershipTeam,
   newsItems,
   school,
   stats
@@ -23,31 +24,39 @@ export default function Home() {
       <Hero />
 
       <section className="section-y bg-white">
-        <div className="site-container grid items-center gap-10 lg:grid-cols-[0.85fr_1.15fr]">
-          <div className="overflow-hidden rounded-lg shadow-soft">
-            <SmartImage
-              src="/images/principal.jpg"
-              alt="Principal of St. Joseph's High School"
-              className="h-[420px] w-full object-cover"
-              fallbackLabel="Principal"
-            />
+        <div className="site-container">
+          <SectionTitle
+            title="Our Leadership Team"
+            description="Guided by experienced academic and administrative leadership."
+          />
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {leadershipTeam.map((leader) => (
+              <article
+                key={leader.name}
+                className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-soft"
+              >
+                <SmartImage
+                  src={leader.image}
+                  alt={leader.name}
+                  fallbackLabel={leader.role}
+                  className="aspect-[4/5] w-full object-cover object-center"
+                />
+                <div className="p-6">
+                  <p className="text-sm font-bold uppercase tracking-[0.16em] text-gold">
+                    {leader.role}
+                  </p>
+                  <h2 className="mt-3 text-2xl font-bold leading-tight text-navy">
+                    {leader.name}
+                  </h2>
+                  <p className="mt-4 leading-7 text-slate-600">{leader.bio}</p>
+                </div>
+              </article>
+            ))}
           </div>
-          <div>
-            <SectionTitle
-              align="left"
-              title="Our Leadership Team"
-              description="Guided by experienced academic and administrative leadership."
-            />
-            <p className="text-lg leading-8 text-slate-600">
-              Mr. Maram Vijaya Prasad serves as Principal and Correspondent,
-              guiding the school's academic operations, administration, and
-              strategic growth. Vice Principal Kakumanu Nirmala Mary supports
-              daily academic discipline and student care, helping maintain an
-              inspiring, inclusive, and highly disciplined learning environment.
-            </p>
+          <div className="mt-10 text-center">
             <Link
               href="/about#leadership"
-              className="focus-ring mt-8 inline-flex rounded-md bg-navy px-5 py-3 text-sm font-bold uppercase tracking-[0.12em] text-white transition hover:-translate-y-0.5 hover:bg-navy-dark"
+              className="focus-ring inline-flex rounded-md bg-navy px-5 py-3 text-sm font-bold uppercase tracking-[0.12em] text-white transition hover:-translate-y-0.5 hover:bg-navy-dark"
             >
               Meet Our Leadership
             </Link>
