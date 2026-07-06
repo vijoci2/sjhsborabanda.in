@@ -124,7 +124,7 @@ export default function AboutPage() {
                   src={leader.image}
                   alt={leader.name}
                   fallbackLabel={leader.role}
-                  className="aspect-[4/5] w-full object-cover object-center"
+                  className="h-[420px] w-full bg-mist object-contain object-center"
                 />
                 <div className="p-6">
                   <p className="text-sm font-bold uppercase tracking-[0.16em] text-gold">
