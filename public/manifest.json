@@ -1,0 +1,17 @@
+{
+  "name": "St. Joseph's High School",
+  "short_name": "St. Joseph's",
+  "description": "Official public website for St. Joseph's High School, Borabanda, Hyderabad.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#0B2D4D",
+  "icons": [
+    {
+      "src": "/images/logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
