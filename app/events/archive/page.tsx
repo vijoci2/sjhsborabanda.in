@@ -1,35 +1,34 @@
 import type { Metadata } from "next";
-import { PublicGalleryAlbums } from "@/components/CMS/PublicGallery";
+import { PublicEvents } from "@/components/CMS/PublicEvents";
 import { SectionTitle } from "@/components/UI/SectionTitle";
 
 export const metadata: Metadata = {
-  title: "Gallery",
+  title: "Events Archive",
   description:
-    "Filtered public gallery for St. Joseph's High School campus, academics, celebrations, sports, and activities."
+    "Permanent events archive and school diary for St. Joseph's High School."
 };
 
-export default function GalleryPage() {
+export default function EventsArchivePage() {
   return (
     <>
       <section className="bg-navy py-20 text-white">
         <div className="site-container max-w-4xl">
           <h1 className="text-4xl font-bold tracking-tight md:text-6xl">
-            Gallery
+            Events Archive
           </h1>
           <p className="mt-6 text-xl leading-8 text-white/78">
-            Public campus moments, organized with simple filters for families,
-            alumni, and visitors.
+            Browse past school events by year, month, title, and location.
           </p>
         </div>
       </section>
 
-      <section className="section-y bg-white">
+      <section className="section-y bg-mist">
         <div className="site-container">
           <SectionTitle
-            title="Gallery Albums"
-            description="Browse published albums. Photographs are managed through the school website CMS."
+            title="Permanent School Diary"
+            description="Past events and photographs remain available across academic years."
           />
-          <PublicGalleryAlbums />
+          <PublicEvents mode="archive" />
         </div>
       </section>
     </>
