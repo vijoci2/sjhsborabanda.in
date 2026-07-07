@@ -15,6 +15,7 @@ import {
   leadershipTeam,
   newsItems,
   school,
+  schoolUnits,
   stats
 } from "@/lib/data";
 
@@ -277,9 +278,18 @@ export default function Home() {
               description="For admissions, office visits, public enquiries, and official communication."
             />
             <div className="grid gap-4 text-slate-700">
-              <p>
-                <strong className="text-navy">Address:</strong> {school.address}
-              </p>
+              {schoolUnits.map((unit) => (
+                <div
+                  key={unit.name}
+                  className="rounded-lg border border-slate-200 bg-mist p-4"
+                >
+                  <p className="font-bold text-navy">{unit.name}</p>
+                  <p className="mt-1 text-sm">
+                    <strong>In-charge:</strong> {unit.inCharge}
+                  </p>
+                  <p className="mt-1 text-sm leading-6">{unit.address}</p>
+                </div>
+              ))}
               <p>
                 <strong className="text-navy">Phone:</strong> {school.phone}
               </p>
@@ -299,13 +309,21 @@ export default function Home() {
             </a>
           </div>
           <div className="rounded-lg border border-slate-200 bg-mist p-8 text-center shadow-sm">
-            <div className="flex min-h-[280px] items-center justify-center rounded-lg border border-dashed border-navy/25 bg-white">
+            <div className="flex min-h-[280px] items-center justify-center rounded-lg border border-slate-200 bg-white">
               <div>
-                <p className="text-xl font-bold text-navy">Google Maps Embed</p>
+                <p className="text-xl font-bold text-navy">Find Us on Google Maps</p>
                 <p className="mt-2 max-w-sm text-sm leading-6 text-slate-600">
-                  Replace this public placeholder with the official school map
-                  embed when the verified map link is available.
+                  Open the official St. Joseph's High School map location for
+                  directions and campus visit planning.
                 </p>
+                <a
+                  href={school.googleMapsUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="focus-ring mt-5 inline-flex rounded-md bg-navy px-5 py-3 text-sm font-bold uppercase tracking-[0.12em] text-white transition hover:-translate-y-0.5 hover:bg-navy-dark"
+                >
+                  Open in Google Maps
+                </a>
               </div>
             </div>
           </div>

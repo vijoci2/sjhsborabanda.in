@@ -5,15 +5,35 @@ export const school = {
   parentSociety: "St. Joseph's Educational Society",
   parentTrust: "Maram Joji Educational Trust",
   location: "Borabanda, Hyderabad, Telangana, India",
-  address: "Borabanda, Hyderabad, Telangana, India",
+  address: "8-3-169/253, 254 & 255, Borabanda, Hyderabad, Telangana, India",
   phone: "+91 40 0000 0000",
   email: "office@stjosephsborabanda.edu.in",
   timings: "Monday to Saturday, 8:30 AM - 4:00 PM",
   whatsapp: "https://wa.me/914000000000?text=Hello%20St.%20Joseph's%20High%20School%2C%20I%20would%20like%20to%20enquire%20about%20admissions.",
+  googleMapsUrl: "https://share.google/Y9K4m8M0XjiqId8rr",
   tagline: "Educating Minds. Building Character. Inspiring Futures.",
   philosophy: "Education is the ultimate source of empowerment.",
   motto: "Knowledge, Character, Service"
 };
+
+export const schoolUnits = [
+  {
+    name: "St. Joseph's High School",
+    inCharge: "Maram Vijaya Prasad",
+    address: "8-3-169/253, 254 & 255, Borabanda, Hyderabad, Telangana, India"
+  },
+  {
+    name: "St. Joseph's Primary School",
+    inCharge: "Maram Vijoci Dev",
+    address:
+      "8-3-169/311, 312, 289 & 290, Habeeb Fatima Nagar, Borabanda, Hyderabad, Telangana, India"
+  },
+  {
+    name: "St. Joseph's Pre Primary School",
+    inCharge: "Kakumanu Nirmala Mary",
+    address: "8-3-169/64 & 65, Borabanda, Hyderabad, Telangana, India"
+  }
+];
 
 export const navLinks = [
   { label: "Home", href: "/" },

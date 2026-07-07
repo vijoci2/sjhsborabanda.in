@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
 import { ContactForm } from "@/components/Forms/ContactForm";
 import { SectionTitle } from "@/components/UI/SectionTitle";
-import { school } from "@/lib/data";
+import { school, schoolUnits } from "@/lib/data";
 
 export const metadata: Metadata = {
   title: "Contact Us",
   description:
-    "Contact information, office timings, enquiry UI, and map placeholder for St. Joseph's High School."
+    "Contact information, office timings, enquiry UI, and Google Maps link for St. Joseph's High School."
 };
 
 export default function ContactPage() {
@@ -50,15 +50,48 @@ export default function ContactPage() {
               WhatsApp Enquiry
             </a>
 
-            <div className="mt-8 rounded-lg border border-dashed border-navy/25 bg-white p-8 text-center shadow-sm">
-              <p className="text-xl font-bold text-navy">Google Maps Embed</p>
+            <div className="mt-8 rounded-lg border border-slate-200 bg-white p-8 shadow-sm">
+              <p className="text-xl font-bold text-navy">Find Us on Google Maps</p>
               <p className="mt-2 text-sm leading-6 text-slate-600">
-                Use the verified public Google Maps embed link here during
-                deployment.
+                Open the official St. Joseph's High School location for
+                directions and campus visits.
               </p>
+              <a
+                href={school.googleMapsUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="focus-ring mt-5 inline-flex rounded-md bg-navy px-5 py-3 text-sm font-bold uppercase tracking-[0.12em] text-white transition hover:-translate-y-0.5 hover:bg-navy-dark"
+              >
+                Open in Google Maps
+              </a>
             </div>
           </div>
           <ContactForm mode="contact" />
+        </div>
+      </section>
+
+      <section className="section-y bg-mist">
+        <div className="site-container">
+          <SectionTitle
+            title="School Units & Addresses"
+            description="Official public address details for the High School, Primary School, and Pre Primary School."
+          />
+          <div className="grid gap-5 md:grid-cols-3">
+            {schoolUnits.map((unit) => (
+              <article
+                key={unit.name}
+                className="rounded-lg border border-slate-200 bg-white p-6 shadow-sm"
+              >
+                <p className="text-sm font-bold uppercase tracking-[0.16em] text-gold">
+                  {unit.name}
+                </p>
+                <h2 className="mt-3 text-2xl font-bold text-navy">
+                  {unit.inCharge}
+                </h2>
+                <p className="mt-4 leading-7 text-slate-600">{unit.address}</p>
+              </article>
+            ))}
+          </div>
         </div>
       </section>
     </>
