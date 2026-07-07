@@ -30,7 +30,7 @@ export default function Home() {
             title="Our Leadership Team"
             description="Guided by experienced academic and administrative leadership."
           />
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
             {leadershipTeam.map((leader) => (
               <article
                 key={leader.name}
@@ -40,7 +40,7 @@ export default function Home() {
                   src={leader.image}
                   alt={leader.name}
                   fallbackLabel={leader.role}
-                  className="h-[420px] w-full bg-mist object-contain object-center"
+                  className="aspect-[3/2] w-full bg-mist object-cover object-center"
                 />
                 <div className="p-6">
                   <p className="text-sm font-bold uppercase tracking-[0.16em] text-gold">
