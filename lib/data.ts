@@ -335,25 +335,32 @@ export const historyTimeline = [
 
 export const leadershipTeam = [
   {
-    name: "Mr. Maram Vijaya Prasad",
-    role: "Principal & Correspondent",
-    image: "/images/principal.jpg",
+    name: "Maram Vijaya Prasad",
+    role: "Correspondent",
+    image: "/images/correspondent.jpg",
     bio:
-      "As Principal and Correspondent, Mr. Maram Vijaya Prasad guides the school's academic operations, management, and strategic growth with a disciplined educational vision. His leadership supports faculty development, campus infrastructure, and a focused learning environment where students have what they need to thrive."
+      "As Correspondent, Maram Vijaya Prasad supports the school's administration, institutional coordination, infrastructure planning, and strategic growth with a disciplined educational vision."
   },
   {
-    name: "Kakumanu Nirmala Mary",
+    name: "Kakumanu Swarna Ravali, B.Sc., B.Ed.",
     role: "Vice Principal",
     image: "/images/vice-principal.jpg",
     bio:
-      "As Vice Principal, Kakumanu Nirmala Mary supports daily academic discipline, classroom coordination, student care, and parent communication. Her steady guidance helps keep the school environment organized, inclusive, and focused on meaningful learning."
+      "As Vice Principal, Kakumanu Swarna Ravali supports daily academic discipline, classroom coordination, student care, and parent communication with a steady focus on meaningful learning."
   },
   {
-    name: "Mr. Maram Vijoci Dev",
+    name: "Kakumanu Nirmala Mary",
+    role: "Principal",
+    image: "/images/principal.jpg",
+    bio:
+      "As Principal, Kakumanu Nirmala Mary guides the school's academic operations, classroom standards, faculty coordination, and disciplined learning environment."
+  },
+  {
+    name: "Maram Vijoci Dev",
     role: "Director",
     image: "/images/director.jpg",
     bio:
-      "Bringing a progressive edge to our school's leadership, Mr. Maram Vijoci Dev bridges modern technology with traditional educational values. He steers the school's long-term vision, driving the integration of digital learning tools, logical thinking, and innovative teaching methods into our established curriculum."
+      "As Director, Maram Vijoci Dev bridges modern technology with traditional educational values and steers the school's long-term vision, digital learning, and innovation."
   }
 ];
 
