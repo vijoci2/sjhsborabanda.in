@@ -10,7 +10,7 @@ import type {
 } from "@/types/cms";
 
 const SESSION_KEY = "sjhs_admin_session";
-const REQUEST_TIMEOUT_MS = 30000;
+const REQUEST_TIMEOUT_MS = 60000;
 
 export const appsScriptUrl =
   process.env.NEXT_PUBLIC_APPS_SCRIPT_URL?.trim() ?? "";
@@ -129,10 +129,14 @@ export async function fileToUploadPayload(file: File): Promise<UploadFilePayload
 
 export const cmsApi = {
   adminLogin(username: string, password: string) {
-    return requestCms<{ sessionToken: string; user: AdminUser }>("adminLogin", {
-      username,
-      password
-    });
+    return requestCms<{ sessionToken: string; user: AdminUser }>(
+      "adminLogin",
+      {
+        username,
+        password
+      },
+      { timeoutMs: 90000 }
+    );
   },
 
   validateSession() {
