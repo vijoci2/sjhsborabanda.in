@@ -4,7 +4,7 @@ import { SmartImage } from "@/components/UI/SmartImage";
 
 const usefulLinks = [
   { label: "Admissions", href: "/admissions" },
-  { label: "News & Events", href: "/news-events" },
+  { label: "Events Archive", href: "/events/archive" },
   { label: "Gallery", href: "/gallery" },
   { label: "Alumni", href: "/alumni" }
 ];
@@ -105,7 +105,17 @@ export function Footer() {
             Copyright {new Date().getFullYear()} {school.name}. All rights
             reserved.
           </p>
-          <p>Public information only. Private student records are never displayed.</p>
+          <div className="flex items-center gap-3">
+            <p>Public information only. Private student records are never displayed.</p>
+            <Link
+              href="/admin"
+              aria-label="Administration"
+              title="Administration"
+              className="focus-ring inline-flex h-7 w-7 items-center justify-center rounded text-xs text-white/35 transition hover:bg-white/10 hover:text-gold"
+            >
+              ⚙
+            </Link>
+          </div>
         </div>
       </div>
     </footer>
