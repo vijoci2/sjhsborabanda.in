@@ -39,6 +39,7 @@ export const navLinks = [
   { label: "Home", href: "/" },
   { label: "About Us", href: "/about" },
   { label: "Our Leadership", href: "/about#leadership" },
+  { label: "Events", href: "/events" },
   { label: "Admissions", href: "/admissions" },
   { label: "Contact Us", href: "/contact" }
 ];
