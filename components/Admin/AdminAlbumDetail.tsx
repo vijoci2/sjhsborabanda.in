@@ -69,7 +69,18 @@ export function AdminAlbumDetail({ albumId }: { albumId: string }) {
     const response = await cmsApi.updateAlbum(albumId, {
       DRIVE_FOLDER_URL: cleanLink
     });
-    setMessage(response.message);
+    if (response.success) {
+      const savedLink = response.data?.album?.DRIVE_FOLDER_URL || "";
+      if (cleanLink && savedLink !== cleanLink) {
+        setMessage(
+          "The link was submitted, but it was not saved in the Sheet. Paste the latest Code.gs, deploy a new Apps Script version, then try again."
+        );
+      } else {
+        setMessage(cleanLink ? "Shared album link saved." : "Shared album link removed.");
+      }
+    } else {
+      setMessage(response.message);
+    }
     setSaving(false);
     await loadAlbum();
   }

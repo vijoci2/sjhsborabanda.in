@@ -703,6 +703,7 @@ function setEventCoverPhoto(payload) {
 }
 
 function getPublishedAlbums() {
+  ensureGalleryAlbumSchema();
   var albums = getAlbumsWithPhotoCount().filter(function (album) {
     return album.STATUS === "PUBLISHED";
   });
@@ -710,6 +711,7 @@ function getPublishedAlbums() {
 }
 
 function getAlbumBySlug(payload) {
+  ensureGalleryAlbumSchema();
   var slug = sanitizeSlug(payload.slug || "");
   var album = getAlbumsWithPhotoCount().find(function (item) {
     return item.SLUG === slug && item.STATUS === "PUBLISHED";
@@ -724,6 +726,7 @@ function getAlbumBySlug(payload) {
 }
 
 function getAlbumPhotos(payload) {
+  ensureGalleryAlbumSchema();
   var albumId = sanitizeText(payload.albumId || "");
   var album = findRowById("GALLERY_ALBUMS", "ALBUM_ID", albumId);
   if (!album) {
@@ -734,11 +737,13 @@ function getAlbumPhotos(payload) {
 
 function getAllAlbums(payload) {
   validateAdminSession(payload.sessionToken);
+  ensureGalleryAlbumSchema();
   return jsonSuccess("Albums loaded.", { albums: getAlbumsWithPhotoCount() });
 }
 
 function createAlbum(payload) {
   var session = validateAdminSession(payload.sessionToken);
+  ensureGalleryAlbumSchema();
   var album = payload.album || {};
   var title = sanitizeText(album.TITLE || "");
   var albumDate = sanitizeText(album.ALBUM_DATE || "");
@@ -772,6 +777,7 @@ function createAlbum(payload) {
 
 function updateAlbum(payload) {
   var session = validateAdminSession(payload.sessionToken);
+  ensureGalleryAlbumSchema();
   var albumId = sanitizeText(payload.albumId || "");
   var current = findRowById("GALLERY_ALBUMS", "ALBUM_ID", albumId);
   if (!current) {
@@ -814,6 +820,7 @@ function unpublishAlbum(payload) {
 
 function updateAlbumStatus(payload, status, action, message) {
   var session = validateAdminSession(payload.sessionToken);
+  ensureGalleryAlbumSchema();
   var albumId = sanitizeText(payload.albumId || "");
   if (!findRowById("GALLERY_ALBUMS", "ALBUM_ID", albumId)) {
     return jsonError("Album not found.", "NOT_FOUND");
@@ -967,6 +974,7 @@ function setAlbumCover(payload) {
 
 function deleteAlbum(payload) {
   var session = validateAdminSession(payload.sessionToken);
+  ensureGalleryAlbumSchema();
   var albumId = sanitizeText(payload.albumId || "");
   var album = findRowById("GALLERY_ALBUMS", "ALBUM_ID", albumId);
   if (!album) {
@@ -1163,6 +1171,7 @@ function getEventsWithPhotoCount() {
 }
 
 function getAlbumsWithPhotoCount() {
+  ensureGalleryAlbumSchema();
   var photos = getRows("GALLERY_PHOTOS");
   return getRows("GALLERY_ALBUMS").map(function (album) {
     var storedPhotos = photos.filter(function (photo) {
@@ -1175,6 +1184,10 @@ function getAlbumsWithPhotoCount() {
     }
     return album;
   });
+}
+
+function ensureGalleryAlbumSchema() {
+  ensureSheet(getSpreadsheet(), "GALLERY_ALBUMS", SHEET_HEADERS.GALLERY_ALBUMS);
 }
 
 function getAlbumPhotoRows(albumId, album) {

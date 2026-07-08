@@ -38,12 +38,18 @@ export function PublicGalleryAlbums() {
             key={album.ALBUM_ID}
             className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-lift"
           >
-            <SmartImage
-              src={album.COVER_PHOTO_URL || "/images/campus.jpg"}
-              alt={album.TITLE}
-              fallbackLabel="Album"
-              className="aspect-[3/2] w-full object-cover"
-            />
+            {album.COVER_PHOTO_URL ? (
+              <SmartImage
+                src={album.COVER_PHOTO_URL}
+                alt={album.TITLE}
+                fallbackLabel="Album"
+                className="aspect-[3/2] w-full object-cover"
+              />
+            ) : (
+              <div className="flex aspect-[3/2] w-full items-center justify-center bg-gradient-to-br from-navy to-navy-dark p-6 text-center text-sm font-semibold uppercase tracking-[0.18em] text-white/80">
+                Shared Album
+              </div>
+            )}
             <div className="p-5">
               <p className="text-sm font-bold text-gold">
                 {formatCmsDate(album.ALBUM_DATE)}
@@ -51,7 +57,11 @@ export function PublicGalleryAlbums() {
               <h2 className="mt-2 text-2xl font-bold text-navy">{album.TITLE}</h2>
               <p className="mt-2 leading-7 text-slate-600">{album.DESCRIPTION}</p>
               <p className="mt-3 text-sm font-semibold text-slate-500">
-                {album.PHOTO_COUNT ?? 0} photos
+                {Number(album.PHOTO_COUNT ?? 0) > 0
+                  ? `${album.PHOTO_COUNT} photos`
+                  : album.DRIVE_FOLDER_URL
+                    ? "Shared album link"
+                    : "0 photos"}
               </p>
               <Link
                 href={`/gallery/${album.SLUG}`}
