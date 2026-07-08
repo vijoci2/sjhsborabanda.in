@@ -105,6 +105,8 @@ School Website CMS/
 
 Images are uploaded to Drive. Google Sheets stores only file IDs, folder IDs, file names, MIME types, captions, alt text, and public display URLs. Base64 is used only during upload transport and is not stored in Sheets.
 
+For very large event or gallery collections, create a public Google Drive folder and paste its link into the album's `Google Drive folder link` field in the admin form. Keep `Location` as the human-readable place, for example `St. Joseph's High School, Borabanda`.
+
 ## Apps Script Setup
 
 1. Create a Google Apps Script project.
@@ -172,6 +174,7 @@ Only a `SUPER_ADMIN` can permanently delete an event record. Normal event contro
 
 - Albums can be created, edited, published, unpublished, and deleted.
 - Each album has its own Drive folder.
+- A public Google Drive folder link can be saved on the album for large photo collections.
 - Each photo can have caption, optional names, alt text, and display order.
 - One photo can be selected as the album cover.
 - Deleting a gallery photo moves the Drive file to Trash after folder verification.
