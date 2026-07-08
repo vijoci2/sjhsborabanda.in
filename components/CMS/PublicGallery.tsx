@@ -53,24 +53,12 @@ export function PublicGalleryAlbums() {
               <p className="mt-3 text-sm font-semibold text-slate-500">
                 {album.PHOTO_COUNT ?? 0} photos
               </p>
-              <div className="mt-5 flex flex-wrap gap-2">
-                <Link
-                  href={`/gallery/${album.SLUG}`}
-                  className="focus-ring inline-flex rounded-md bg-navy px-4 py-2 text-sm font-bold text-white"
-                >
-                  View Album
-                </Link>
-                {album.DRIVE_FOLDER_URL ? (
-                  <a
-                    href={album.DRIVE_FOLDER_URL}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="focus-ring inline-flex rounded-md border border-gold px-4 py-2 text-sm font-bold text-navy"
-                  >
-                    Shared Album
-                  </a>
-                ) : null}
-              </div>
+              <Link
+                href={`/gallery/${album.SLUG}`}
+                className="focus-ring mt-5 inline-flex rounded-md bg-navy px-4 py-2 text-sm font-bold text-white"
+              >
+                View Album
+              </Link>
             </div>
           </article>
         ))}
@@ -156,7 +144,7 @@ export function PublicGalleryAlbumDetail({ slug }: { slug: string }) {
             rel="noreferrer"
             className="focus-ring mt-5 inline-flex rounded-md bg-gold px-4 py-2 text-sm font-bold text-navy"
           >
-            Open Full Shared Album
+            Open Original Shared Album
           </a>
         ) : null}
       </div>
@@ -184,7 +172,8 @@ export function PublicGalleryAlbumDetail({ slug }: { slug: string }) {
         </div>
       ) : album.DRIVE_FOLDER_URL ? (
         <div className="rounded-lg border border-gold/30 bg-gold/10 p-6 text-center text-navy">
-          Photos are available in the linked Google Drive album.
+          This shared album could not be displayed inside the website. Use the
+          button above to open the original album.
         </div>
       ) : null}
 

@@ -181,24 +181,47 @@ export function AdminAlbumDetail({ albumId }: { albumId: string }) {
             .slice()
             .sort((a, b) => Number(a.DISPLAY_ORDER) - Number(b.DISPLAY_ORDER))
             .map((photo) => (
-              <PhotoEditor
-                key={photo.PHOTO_ID}
-                photo={photo}
-                saving={saving}
-                onSave={updatePhoto}
-                onDelete={deletePhoto}
-                onCover={setCover}
-              />
+              photo.SOURCE_TYPE === "SHARED_LINK" ? (
+                <LinkedPhotoPreview key={photo.PHOTO_ID} photo={photo} />
+              ) : (
+                <PhotoEditor
+                  key={photo.PHOTO_ID}
+                  photo={photo}
+                  saving={saving}
+                  onSave={updatePhoto}
+                  onDelete={deletePhoto}
+                  onCover={setCover}
+                />
+              )
             ))
         ) : (
           <div className="rounded-lg bg-white p-6 text-center text-slate-600 shadow-sm">
             {album?.DRIVE_FOLDER_URL
-              ? "No separate website photos are uploaded. The public page will use the shared album link."
+              ? "No images could be read from this shared link yet. Check that the Drive folder is public, or use the original shared album link."
               : "Paste a shared photo album link above and submit."}
           </div>
         )}
       </div>
     </div>
+  );
+}
+
+function LinkedPhotoPreview({ photo }: { photo: GalleryPhoto }) {
+  return (
+    <article className="overflow-hidden rounded-lg bg-white shadow-sm">
+      <SmartImage
+        src={photo.THUMBNAIL_URL || photo.IMAGE_URL}
+        alt={photo.ALT_TEXT || "Linked gallery photograph"}
+        fallbackLabel="Linked Photo"
+        className="aspect-[3/2] w-full object-cover"
+      />
+      <div className="grid gap-2 p-4">
+        <p className="text-sm font-bold text-navy">{photo.FILE_NAME}</p>
+        <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
+          Linked from shared album
+        </p>
+      </div>
+    </article>
   );
 }
 

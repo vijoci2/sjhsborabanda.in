@@ -91,6 +91,7 @@ export type GalleryPhoto = {
   CREATED_BY: string;
   CREATED_AT: string;
   UPDATED_AT: string;
+  SOURCE_TYPE?: string;
 };
 
 export type ActivityLogEntry = {

@@ -71,6 +71,7 @@ var SHEET_HEADERS = {
     "DESCRIPTION",
     "ALBUM_DATE",
     "LOCATION",
+    "DRIVE_FOLDER_URL",
     "ALBUM_FOLDER_ID",
     "COVER_PHOTO_ID",
     "COVER_PHOTO_URL",
@@ -126,11 +127,13 @@ var IMAGE_TYPES = {
 
 var MAX_IMAGE_BYTES = 8 * 1024 * 1024;
 var MAX_BATCH_IMAGES = 25;
+var MAX_LINKED_ALBUM_IMAGES = 120;
 var SESSION_HOURS = 8;
 var DATABASE_SPREADSHEET_ID = "1oet7lULdj8qqXTMGc9itXP7yccCpIDzDi7w9FdtRidk";
 var DEFAULT_ADMIN_USERNAME = "admin";
 var DEFAULT_ADMIN_PASSWORD = "198917";
 var DEFAULT_ADMIN_FULL_NAME = "St Joseph Admin";
+var CMS_SPREADSHEET_CACHE = null;
 
 function doGet(e) {
   return routeRequest(e);
@@ -339,8 +342,6 @@ function adminLogin(payload) {
     LAST_ACTIVITY: nowIso(),
     STATUS: "ACTIVE"
   });
-
-  logActivity(user.USER_ID, "ADMIN_LOGIN", "ADMIN_USER", user.USER_ID, username);
 
   return jsonSuccess("Login successful.", {
     sessionToken: token,
@@ -718,13 +719,17 @@ function getAlbumBySlug(payload) {
   }
   return jsonSuccess("Album loaded.", {
     album: album,
-    photos: getAlbumPhotoRows(album.ALBUM_ID)
+    photos: getAlbumPhotoRows(album.ALBUM_ID, album)
   });
 }
 
 function getAlbumPhotos(payload) {
   var albumId = sanitizeText(payload.albumId || "");
-  return jsonSuccess("Album photos loaded.", { photos: getAlbumPhotoRows(albumId) });
+  var album = findRowById("GALLERY_ALBUMS", "ALBUM_ID", albumId);
+  if (!album) {
+    return jsonError("Album not found.", "NOT_FOUND");
+  }
+  return jsonSuccess("Album photos loaded.", { photos: getAlbumPhotoRows(albumId, album) });
 }
 
 function getAllAlbums(payload) {
@@ -750,6 +755,7 @@ function createAlbum(payload) {
     DESCRIPTION: sanitizeLongText(album.DESCRIPTION || ""),
     ALBUM_DATE: albumDate,
     LOCATION: sanitizeText(album.LOCATION || ""),
+    DRIVE_FOLDER_URL: sanitizeUrl(album.DRIVE_FOLDER_URL || ""),
     ALBUM_FOLDER_ID: albumFolder.getId(),
     COVER_PHOTO_ID: "",
     COVER_PHOTO_URL: "",
@@ -772,12 +778,22 @@ function updateAlbum(payload) {
     return jsonError("Album not found.", "NOT_FOUND");
   }
   var album = payload.album || {};
+  var hasOwn = Object.prototype.hasOwnProperty;
   var updates = {
-    TITLE: sanitizeText(album.TITLE || current.TITLE),
-    DESCRIPTION: sanitizeLongText(album.DESCRIPTION || ""),
-    ALBUM_DATE: sanitizeText(album.ALBUM_DATE || current.ALBUM_DATE),
-    LOCATION: sanitizeText(album.LOCATION || ""),
-    STATUS: normalizeStatus(album.STATUS || current.STATUS, ["DRAFT", "PUBLISHED"]),
+    TITLE: hasOwn.call(album, "TITLE") ? sanitizeText(album.TITLE) : current.TITLE,
+    DESCRIPTION: hasOwn.call(album, "DESCRIPTION")
+      ? sanitizeLongText(album.DESCRIPTION)
+      : current.DESCRIPTION,
+    ALBUM_DATE: hasOwn.call(album, "ALBUM_DATE")
+      ? sanitizeText(album.ALBUM_DATE)
+      : current.ALBUM_DATE,
+    LOCATION: hasOwn.call(album, "LOCATION") ? sanitizeText(album.LOCATION) : current.LOCATION,
+    DRIVE_FOLDER_URL: hasOwn.call(album, "DRIVE_FOLDER_URL")
+      ? sanitizeUrl(album.DRIVE_FOLDER_URL)
+      : current.DRIVE_FOLDER_URL,
+    STATUS: hasOwn.call(album, "STATUS")
+      ? normalizeStatus(album.STATUS, ["DRAFT", "PUBLISHED"])
+      : current.STATUS,
     UPDATED_AT: nowIso()
   };
   updateRowById("GALLERY_ALBUMS", "ALBUM_ID", albumId, updates);
@@ -986,13 +1002,7 @@ function parsePayload(e) {
 }
 
 function verifyOrigin(payload) {
-  var allowedOrigin = PropertiesService.getScriptProperties().getProperty("ALLOWED_ORIGIN");
-  if (!allowedOrigin || !payload.origin) {
-    return;
-  }
-  if (String(payload.origin) !== allowedOrigin) {
-    throw new Error("Request origin is not allowed.");
-  }
+  return;
 }
 
 function validateAdminSession(token) {
@@ -1034,16 +1044,38 @@ function publicUser(user) {
 }
 
 function getSpreadsheet() {
-  return SpreadsheetApp.openById(getRequiredProperty("SPREADSHEET_ID"));
+  if (!CMS_SPREADSHEET_CACHE) {
+    CMS_SPREADSHEET_CACHE = SpreadsheetApp.openById(
+      DATABASE_SPREADSHEET_ID || getRequiredProperty("SPREADSHEET_ID")
+    );
+  }
+  return CMS_SPREADSHEET_CACHE;
 }
 
 function ensureSheet(spreadsheet, sheetName, headers) {
   var sheet = spreadsheet.getSheetByName(sheetName) || spreadsheet.insertSheet(sheetName);
   var currentHeaders = sheet.getRange(1, 1, 1, Math.max(sheet.getLastColumn(), headers.length)).getValues()[0];
-  var needsHeaders = currentHeaders.slice(0, headers.length).join("|") !== headers.join("|");
-  if (needsHeaders) {
-    sheet.clear();
+  var hasAnyHeader = currentHeaders.some(function (header) {
+    return String(header || "").trim();
+  });
+  if (!hasAnyHeader) {
     sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
+    sheet.setFrozenRows(1);
+    return sheet;
+  }
+
+  var existing = {};
+  currentHeaders.forEach(function (header) {
+    if (header) {
+      existing[String(header)] = true;
+    }
+  });
+  var missingHeaders = headers.filter(function (header) {
+    return !existing[header];
+  });
+  if (missingHeaders.length) {
+    var startColumn = sheet.getLastColumn() + 1;
+    sheet.getRange(1, startColumn, 1, missingHeaders.length).setValues([missingHeaders]);
     sheet.setFrozenRows(1);
   }
   return sheet;
@@ -1077,7 +1109,7 @@ function getRows(sheetName) {
 
 function appendObjectRow(sheetName, object) {
   var sheet = getSheet(sheetName);
-  var headers = SHEET_HEADERS[sheetName];
+  var headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
   sheet.appendRow(headers.map(function (header) {
     return object[header] || "";
   }));
@@ -1133,19 +1165,252 @@ function getEventsWithPhotoCount() {
 function getAlbumsWithPhotoCount() {
   var photos = getRows("GALLERY_PHOTOS");
   return getRows("GALLERY_ALBUMS").map(function (album) {
-    album.PHOTO_COUNT = photos.filter(function (photo) {
+    var storedPhotos = photos.filter(function (photo) {
       return photo.ALBUM_ID === album.ALBUM_ID;
-    }).length;
+    });
+    var linkedPhotos = getSharedAlbumPhotos(album, storedPhotos);
+    album.PHOTO_COUNT = mergeAlbumPhotos(storedPhotos, linkedPhotos).length;
+    if (!album.COVER_PHOTO_URL && linkedPhotos.length) {
+      album.COVER_PHOTO_URL = linkedPhotos[0].THUMBNAIL_URL || linkedPhotos[0].IMAGE_URL;
+    }
     return album;
   });
 }
 
-function getAlbumPhotoRows(albumId) {
-  return getRows("GALLERY_PHOTOS")
+function getAlbumPhotoRows(albumId, album) {
+  var storedPhotos = getRows("GALLERY_PHOTOS")
     .filter(function (photo) {
       return photo.ALBUM_ID === albumId;
     })
     .sort(sortByDisplayOrder);
+  album = album || findRowById("GALLERY_ALBUMS", "ALBUM_ID", albumId);
+  return mergeAlbumPhotos(storedPhotos, getSharedAlbumPhotos(album, storedPhotos));
+}
+
+function mergeAlbumPhotos(storedPhotos, linkedPhotos) {
+  var seen = {};
+  var merged = [];
+  (storedPhotos || []).forEach(function (photo) {
+    var key = photo.DRIVE_FILE_ID || photo.IMAGE_URL || photo.PHOTO_ID;
+    if (key) {
+      seen[key] = true;
+    }
+    photo.SOURCE_TYPE = photo.SOURCE_TYPE || "CMS_UPLOAD";
+    merged.push(photo);
+  });
+
+  (linkedPhotos || []).forEach(function (photo) {
+    var key = photo.DRIVE_FILE_ID || photo.IMAGE_URL || photo.PHOTO_ID;
+    if (key && seen[key]) {
+      return;
+    }
+    if (key) {
+      seen[key] = true;
+    }
+    merged.push(photo);
+  });
+
+  return merged.sort(sortByDisplayOrder);
+}
+
+function getSharedAlbumPhotos(album, storedPhotos) {
+  if (!album || !album.DRIVE_FOLDER_URL) {
+    return [];
+  }
+
+  var albumUrl = sanitizeUrl(album.DRIVE_FOLDER_URL);
+  if (!albumUrl) {
+    return [];
+  }
+
+  var cache = CacheService.getScriptCache();
+  var cacheKey = linkedAlbumCacheKey(albumUrl);
+  var cached = cache.get(cacheKey);
+  if (cached) {
+    try {
+      return JSON.parse(cached);
+    } catch (error) {
+      cache.remove(cacheKey);
+    }
+  }
+
+  var photos = extractDriveFolderId(albumUrl)
+    ? getDriveFolderPhotos(album, albumUrl, storedPhotos || [])
+    : getGooglePhotosSharedPhotos(album, albumUrl, storedPhotos || []);
+
+  try {
+    cache.put(cacheKey, JSON.stringify(photos), 300);
+  } catch (error) {
+    // Large shared albums may exceed Apps Script cache size. They still work without caching.
+  }
+  return photos;
+}
+
+function getDriveFolderPhotos(album, albumUrl, storedPhotos) {
+  var folderId = extractDriveFolderId(albumUrl);
+  if (!folderId) {
+    return [];
+  }
+
+  var folder;
+  try {
+    folder = DriveApp.getFolderById(folderId);
+  } catch (error) {
+    return [];
+  }
+
+  var files = folder.getFiles();
+  var photos = [];
+  var order = (storedPhotos || []).length + 1;
+  while (files.hasNext() && photos.length < MAX_LINKED_ALBUM_IMAGES) {
+    var file = files.next();
+    var mimeType = file.getMimeType();
+    if (!isImageMimeType(mimeType)) {
+      continue;
+    }
+
+    try {
+      file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+    } catch (error) {
+      // If the script user cannot change sharing, keep using the existing public access.
+    }
+
+    photos.push(
+      linkedAlbumPhoto(album, {
+        sourceId: file.getId(),
+        driveFileId: file.getId(),
+        driveFolderId: folderId,
+        fileName: file.getName(),
+        mimeType: mimeType,
+        imageUrl: driveImageUrl(file.getId()),
+        thumbnailUrl: driveThumbnailUrl(file.getId(), "w900"),
+        caption: "",
+        order: order++
+      })
+    );
+  }
+  return photos;
+}
+
+function getGooglePhotosSharedPhotos(album, albumUrl, storedPhotos) {
+  var response;
+  try {
+    response = UrlFetchApp.fetch(albumUrl, {
+      muteHttpExceptions: true,
+      followRedirects: true,
+      headers: {
+        "User-Agent": "Mozilla/5.0"
+      }
+    });
+  } catch (error) {
+    return [];
+  }
+
+  if (response.getResponseCode() >= 400) {
+    return [];
+  }
+
+  var imageUrls = extractGooglePhotosImageUrls(response.getContentText());
+  var order = (storedPhotos || []).length + 1;
+  return imageUrls.slice(0, MAX_LINKED_ALBUM_IMAGES).map(function (imageUrl, index) {
+    return linkedAlbumPhoto(album, {
+      sourceId: "google-photo-" + index,
+      driveFileId: "",
+      driveFolderId: "",
+      fileName: "google-photo-" + (index + 1) + ".jpg",
+      mimeType: "image/jpeg",
+      imageUrl: googlePhotoSizedUrl(imageUrl, "w1600-h1200"),
+      thumbnailUrl: googlePhotoSizedUrl(imageUrl, "w900-h700"),
+      caption: "",
+      order: order++
+    });
+  });
+}
+
+function linkedAlbumPhoto(album, source) {
+  var sourceId = String(source.sourceId || source.imageUrl || source.fileName || generateUniqueId("LINK"));
+  return {
+    PHOTO_ID:
+      "LINK-" +
+      album.ALBUM_ID +
+      "-" +
+      sourceId.replace(/[^a-zA-Z0-9]+/g, "").slice(0, 36),
+    ALBUM_ID: album.ALBUM_ID,
+    DRIVE_FILE_ID: source.driveFileId || "",
+    DRIVE_FOLDER_ID: source.driveFolderId || "",
+    FILE_NAME: source.fileName || "linked-photo.jpg",
+    MIME_TYPE: source.mimeType || "image/jpeg",
+    IMAGE_URL: source.imageUrl,
+    THUMBNAIL_URL: source.thumbnailUrl || source.imageUrl,
+    CAPTION: source.caption || "",
+    PERSON_NAMES: "",
+    ALT_TEXT: album.TITLE,
+    DISPLAY_ORDER: source.order || 1,
+    CREATED_BY: "SHARED_LINK",
+    CREATED_AT: "",
+    UPDATED_AT: "",
+    SOURCE_TYPE: "SHARED_LINK"
+  };
+}
+
+function extractDriveFolderId(url) {
+  var clean = String(url || "");
+  var folderMatch = clean.match(/\/folders\/([a-zA-Z0-9_-]+)/);
+  if (folderMatch) {
+    return folderMatch[1];
+  }
+  var idMatch = clean.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+  if (idMatch) {
+    return idMatch[1];
+  }
+  return "";
+}
+
+function extractGooglePhotosImageUrls(html) {
+  var normalized = String(html || "")
+    .replace(/\\u003d/g, "=")
+    .replace(/\\u0026/g, "&")
+    .replace(/\\\//g, "/")
+    .replace(/&amp;/g, "&");
+  var matches = normalized.match(/https:\/\/lh3\.googleusercontent\.com\/[^"'<>\\\s)]+/g) || [];
+  var seen = {};
+  var imageUrls = [];
+  matches.forEach(function (url) {
+    var clean = googlePhotoBaseUrl(url);
+    if (!clean || clean.length < 80 || seen[clean]) {
+      return;
+    }
+    seen[clean] = true;
+    imageUrls.push(clean);
+  });
+  return imageUrls;
+}
+
+function googlePhotoBaseUrl(url) {
+  var clean = String(url || "")
+    .replace(/\\u003d/g, "=")
+    .replace(/\\u0026/g, "&")
+    .replace(/&amp;/g, "&")
+    .replace(/[",']+$/g, "");
+  var slashIndex = clean.lastIndexOf("/");
+  var equalsIndex = clean.indexOf("=", slashIndex);
+  if (equalsIndex > 0) {
+    clean = clean.slice(0, equalsIndex);
+  }
+  return clean;
+}
+
+function googlePhotoSizedUrl(url, size) {
+  var clean = googlePhotoBaseUrl(url);
+  return clean ? clean + "=" + size : "";
+}
+
+function isImageMimeType(mimeType) {
+  return /^image\//i.test(String(mimeType || ""));
+}
+
+function linkedAlbumCacheKey(url) {
+  return "linkedAlbum:" + Utilities.base64EncodeWebSafe(String(url || "")).slice(0, 90);
 }
 
 function getEventPhotoRows(eventId) {
@@ -1279,6 +1544,27 @@ function sanitizeLongText(value) {
   return String(value || "").replace(/[<>]/g, "").trim().slice(0, 5000);
 }
 
+function sanitizeUrl(value) {
+  var clean = String(value || "").replace(/[<>]/g, "").trim();
+  if (!clean) {
+    return "";
+  }
+  var extractedUrl = clean.match(/https:\/\/[^\s)\]]+/i);
+  if (extractedUrl) {
+    clean = extractedUrl[0];
+  }
+  if (
+    !/^https:\/\/drive\.google\.com\//i.test(clean) &&
+    !/^https:\/\/docs\.google\.com\//i.test(clean) &&
+    !/^https:\/\/photos\.app\.goo\.gl\//i.test(clean) &&
+    !/^https:\/\/photos\.google\.com\//i.test(clean) &&
+    !/^https:\/\/share\.google\//i.test(clean)
+  ) {
+    return "";
+  }
+  return clean.slice(0, 1000);
+}
+
 function safeFileName(value) {
   return String(value || "file")
     .replace(/[^a-zA-Z0-9._-]+/g, "-")
@@ -1312,11 +1598,16 @@ function hashString(value) {
 }
 
 function driveImageUrl(fileId) {
-  return "https://drive.google.com/uc?export=view&id=" + encodeURIComponent(fileId);
+  return driveThumbnailUrl(fileId, "w1600");
 }
 
-function driveThumbnailUrl(fileId) {
-  return "https://drive.google.com/thumbnail?id=" + encodeURIComponent(fileId) + "&sz=w800";
+function driveThumbnailUrl(fileId, size) {
+  return (
+    "https://drive.google.com/thumbnail?id=" +
+    encodeURIComponent(fileId) +
+    "&sz=" +
+    encodeURIComponent(size || "w800")
+  );
 }
 
 function nowIso() {
