@@ -107,6 +107,8 @@ Images are uploaded to Drive. Google Sheets stores only file IDs, folder IDs, fi
 
 For very large gallery collections, create a public Google Drive folder or Google Photos shared album and paste its link into the album's `Google Drive / Google Photos link` field in the admin form. Keep `Location` as the human-readable place, for example `St. Joseph's High School, Borabanda`.
 
+Google Drive folder links are read by Apps Script and displayed inside the website gallery automatically. Google Photos shared links are parsed on a best-effort basis; if Google does not expose usable image URLs, the website still shows an `Open Original Shared Album` button.
+
 ## Apps Script Setup
 
 1. Create a Google Apps Script project.
@@ -174,7 +176,8 @@ Only a `SUPER_ADMIN` can permanently delete an event record. Normal event contro
 
 - Albums can be created, edited, published, unpublished, and deleted.
 - Each album has its own Drive folder.
-- A public Google Drive folder or Google Photos shared album link can be saved on the album for large photo collections.
+- A public Google Drive folder link can populate the website gallery dynamically.
+- A Google Photos shared album link can be saved and opened from the website; in-page display is best-effort because Google Photos does not provide a stable public shared-link image API.
 - Each photo can have caption, optional names, alt text, and display order.
 - One photo can be selected as the album cover.
 - Deleting a gallery photo moves the Drive file to Trash after folder verification.
