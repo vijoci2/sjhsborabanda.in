@@ -10,6 +10,7 @@ const emptyAlbum = {
   DESCRIPTION: "",
   ALBUM_DATE: "",
   LOCATION: "",
+  DRIVE_FOLDER_URL: "",
   STATUS: "DRAFT" as CmsStatus
 };
 
@@ -48,6 +49,7 @@ export function AdminAlbumForm({ albumId }: AdminAlbumFormProps) {
         DESCRIPTION: album.DESCRIPTION,
         ALBUM_DATE: album.ALBUM_DATE,
         LOCATION: album.LOCATION,
+        DRIVE_FOLDER_URL: album.DRIVE_FOLDER_URL || "",
         STATUS: album.STATUS
       });
       setMessage("");
@@ -134,12 +136,27 @@ export function AdminAlbumForm({ albumId }: AdminAlbumFormProps) {
           </label>
         </div>
         <label className="grid gap-2 text-sm font-semibold text-navy">
-          Location
+          Location / place
           <input
             value={form.LOCATION}
             onChange={(event) => updateField("LOCATION", event.target.value)}
+            placeholder="Example: St. Joseph's High School, Borabanda"
             className="focus-ring rounded-md border border-slate-200 px-3 py-3"
           />
+        </label>
+        <label className="grid gap-2 text-sm font-semibold text-navy">
+          Google Drive / Google Photos link
+          <input
+            type="url"
+            value={form.DRIVE_FOLDER_URL}
+            onChange={(event) => updateField("DRIVE_FOLDER_URL", event.target.value)}
+            placeholder="Paste the public Drive or Google Photos album link here"
+            className="focus-ring rounded-md border border-slate-200 px-3 py-3"
+          />
+          <span className="text-xs font-medium leading-5 text-slate-500">
+            Set sharing to "Anyone with the link - Viewer". This keeps GitHub
+            small and gives visitors a full album link.
+          </span>
         </label>
       </div>
 

@@ -31,7 +31,7 @@ export function AdminGalleryManager() {
     return albums
       .filter((album) =>
         cleanQuery
-          ? `${album.TITLE} ${album.LOCATION} ${album.DESCRIPTION}`
+          ? `${album.TITLE} ${album.LOCATION} ${album.DESCRIPTION} ${album.DRIVE_FOLDER_URL || ""}`
               .toLowerCase()
               .includes(cleanQuery)
           : true
@@ -108,6 +108,16 @@ export function AdminGalleryManager() {
               <p className="mt-2 text-sm text-slate-500">
                 {album.LOCATION} {album.PHOTO_COUNT ? `- ${album.PHOTO_COUNT} photos` : ""}
               </p>
+              {album.DRIVE_FOLDER_URL ? (
+                <a
+                  href={album.DRIVE_FOLDER_URL}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="mt-3 inline-flex text-sm font-bold text-navy underline decoration-gold decoration-2 underline-offset-4"
+                >
+                  Open shared album
+                </a>
+              ) : null}
 
               <div className="mt-5 flex flex-wrap gap-2">
                 <Link

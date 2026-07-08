@@ -2,18 +2,22 @@
 
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { cmsApi, fileToUploadPayload } from "@/lib/appsScriptApi";
+import { cmsApi } from "@/lib/appsScriptApi";
 import { formatCmsDate } from "@/lib/cmsFallback";
 import type { GalleryAlbum, GalleryPhoto } from "@/types/cms";
 import { AdminAlbumForm } from "@/components/Admin/AdminAlbumForm";
 import { SmartImage } from "@/components/UI/SmartImage";
+
+function extractSharedAlbumUrl(value: string) {
+  return value.trim().match(/https:\/\/[^\s)\]]+/i)?.[0] ?? value.trim();
+}
 
 export function AdminAlbumDetail({ albumId }: { albumId: string }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [album, setAlbum] = useState<GalleryAlbum | null>(null);
   const [photos, setPhotos] = useState<GalleryPhoto[]>([]);
-  const [files, setFiles] = useState<File[]>([]);
+  const [shareLink, setShareLink] = useState("");
   const [message, setMessage] = useState("Loading album...");
   const [saving, setSaving] = useState(false);
 
@@ -37,6 +41,7 @@ export function AdminAlbumDetail({ albumId }: { albumId: string }) {
 
     const photosResponse = await cmsApi.getAlbumPhotos(albumId);
     setAlbum(foundAlbum);
+    setShareLink(foundAlbum.DRIVE_FOLDER_URL || "");
     setPhotos(photosResponse.success ? photosResponse.data?.photos ?? [] : []);
     setMessage("");
   }
@@ -45,17 +50,26 @@ export function AdminAlbumDetail({ albumId }: { albumId: string }) {
     loadAlbum();
   }, [albumId]);
 
-  async function uploadPhotos() {
-    if (!files.length) {
-      setMessage("Choose photographs first.");
+  async function saveShareLink() {
+    const cleanLink = extractSharedAlbumUrl(shareLink);
+    const isAllowedLink =
+      !cleanLink ||
+      /^https:\/\/drive\.google\.com\//i.test(cleanLink) ||
+      /^https:\/\/docs\.google\.com\//i.test(cleanLink) ||
+      /^https:\/\/photos\.app\.goo\.gl\//i.test(cleanLink) ||
+      /^https:\/\/photos\.google\.com\//i.test(cleanLink) ||
+      /^https:\/\/share\.google\//i.test(cleanLink);
+
+    if (!isAllowedLink) {
+      setMessage("Paste a Google Drive or Google Photos public sharing link.");
       return;
     }
 
     setSaving(true);
-    const payload = await Promise.all(files.map(fileToUploadPayload));
-    const response = await cmsApi.uploadGalleryPhotos(albumId, payload);
+    const response = await cmsApi.updateAlbum(albumId, {
+      DRIVE_FOLDER_URL: cleanLink
+    });
     setMessage(response.message);
-    setFiles([]);
     setSaving(false);
     await loadAlbum();
   }
@@ -109,37 +123,50 @@ export function AdminAlbumDetail({ albumId }: { albumId: string }) {
           {album?.TITLE ?? "Gallery album"}
         </h2>
         {album ? (
-          <p className="mt-2 leading-7 text-slate-600">
-            {formatCmsDate(album.ALBUM_DATE)} - {album.LOCATION}
-          </p>
+          <div className="mt-2 grid gap-2 leading-7 text-slate-600">
+            <p>
+              {formatCmsDate(album.ALBUM_DATE)} - {album.LOCATION}
+            </p>
+            {album.DRIVE_FOLDER_URL ? (
+              <a
+                href={album.DRIVE_FOLDER_URL}
+                target="_blank"
+                rel="noreferrer"
+                className="text-sm font-bold text-navy underline decoration-gold decoration-2 underline-offset-4"
+              >
+                Open shared photo album
+              </a>
+            ) : null}
+          </div>
         ) : null}
       </div>
 
       <div className="rounded-lg bg-white p-6 shadow-sm">
-        <h3 className="text-2xl font-bold text-navy">Upload Photos</h3>
+        <h3 className="text-2xl font-bold text-navy">Shared Photo Album Link</h3>
         <p className="mt-2 text-sm leading-6 text-slate-600">
-          Upload up to 25 images per batch. Captions and names can be edited
-          after upload.
+          Paste a public Google Drive folder link or Google Photos shared album
+          link. Set sharing to anyone with the link, then submit.
         </p>
         <div className="mt-4 grid gap-3 md:grid-cols-[1fr_auto]">
           <input
-            type="file"
-            multiple
-            accept="image/jpeg,image/png,image/webp"
-            onChange={(event) =>
-              setFiles(Array.from(event.target.files ?? []).slice(0, 25))
-            }
+            type="url"
+            value={shareLink}
+            onChange={(event) => setShareLink(event.target.value)}
+            placeholder="https://drive.google.com/drive/folders/..."
             className="focus-ring rounded-md border border-slate-200 px-3 py-3"
           />
           <button
             type="button"
-            disabled={saving || !files.length}
-            onClick={uploadPhotos}
+            disabled={saving}
+            onClick={saveShareLink}
             className="focus-ring rounded-md bg-navy px-5 py-3 text-sm font-bold uppercase tracking-[0.12em] text-white disabled:opacity-60"
           >
-            Upload Photos
+            Submit Link
           </button>
         </div>
+        <p className="mt-3 text-xs font-medium leading-5 text-slate-500">
+          Example: https://drive.google.com/drive/folders/1n06TWEqrqNcnWRtHZ8tCEjZak9vXayRJ
+        </p>
       </div>
 
       {message ? (
@@ -165,7 +192,9 @@ export function AdminAlbumDetail({ albumId }: { albumId: string }) {
             ))
         ) : (
           <div className="rounded-lg bg-white p-6 text-center text-slate-600 shadow-sm">
-            No photographs uploaded yet.
+            {album?.DRIVE_FOLDER_URL
+              ? "No separate website photos are uploaded. The public page will use the shared album link."
+              : "Paste a shared photo album link above and submit."}
           </div>
         )}
       </div>

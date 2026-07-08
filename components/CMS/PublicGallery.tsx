@@ -53,12 +53,24 @@ export function PublicGalleryAlbums() {
               <p className="mt-3 text-sm font-semibold text-slate-500">
                 {album.PHOTO_COUNT ?? 0} photos
               </p>
-              <Link
-                href={`/gallery/${album.SLUG}`}
-                className="focus-ring mt-5 inline-flex rounded-md bg-navy px-4 py-2 text-sm font-bold text-white"
-              >
-                View Album
-              </Link>
+              <div className="mt-5 flex flex-wrap gap-2">
+                <Link
+                  href={`/gallery/${album.SLUG}`}
+                  className="focus-ring inline-flex rounded-md bg-navy px-4 py-2 text-sm font-bold text-white"
+                >
+                  View Album
+                </Link>
+                {album.DRIVE_FOLDER_URL ? (
+                  <a
+                    href={album.DRIVE_FOLDER_URL}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="focus-ring inline-flex rounded-md border border-gold px-4 py-2 text-sm font-bold text-navy"
+                  >
+                    Shared Album
+                  </a>
+                ) : null}
+              </div>
             </div>
           </article>
         ))}
@@ -137,28 +149,44 @@ export function PublicGalleryAlbumDetail({ slug }: { slug: string }) {
         <h1 className="mt-3 text-4xl font-bold text-navy">{album.TITLE}</h1>
         <p className="mt-3 text-slate-600">{album.LOCATION}</p>
         <p className="mt-5 leading-8 text-slate-700">{album.DESCRIPTION}</p>
+        {album.DRIVE_FOLDER_URL ? (
+          <a
+            href={album.DRIVE_FOLDER_URL}
+            target="_blank"
+            rel="noreferrer"
+            className="focus-ring mt-5 inline-flex rounded-md bg-gold px-4 py-2 text-sm font-bold text-navy"
+          >
+            Open Full Shared Album
+          </a>
+        ) : null}
       </div>
 
-      <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-        {orderedPhotos.map((photo, index) => (
-          <button
-            key={photo.PHOTO_ID}
-            type="button"
-            onClick={() => setActiveIndex(index)}
-            className="group overflow-hidden rounded-lg border border-slate-200 bg-white text-left shadow-sm"
-          >
-            <SmartImage
-              src={photo.THUMBNAIL_URL || photo.IMAGE_URL}
-              alt={photo.ALT_TEXT || photo.CAPTION || album.TITLE}
-              fallbackLabel="Photo"
-              className="aspect-[3/2] w-full object-cover transition duration-500 group-hover:scale-105"
-            />
-            {photo.CAPTION ? (
-              <p className="p-4 text-sm leading-6 text-slate-600">{photo.CAPTION}</p>
-            ) : null}
-          </button>
-        ))}
-      </div>
+      {orderedPhotos.length ? (
+        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          {orderedPhotos.map((photo, index) => (
+            <button
+              key={photo.PHOTO_ID}
+              type="button"
+              onClick={() => setActiveIndex(index)}
+              className="group overflow-hidden rounded-lg border border-slate-200 bg-white text-left shadow-sm"
+            >
+              <SmartImage
+                src={photo.THUMBNAIL_URL || photo.IMAGE_URL}
+                alt={photo.ALT_TEXT || photo.CAPTION || album.TITLE}
+                fallbackLabel="Photo"
+                className="aspect-[3/2] w-full object-cover transition duration-500 group-hover:scale-105"
+              />
+              {photo.CAPTION ? (
+                <p className="p-4 text-sm leading-6 text-slate-600">{photo.CAPTION}</p>
+              ) : null}
+            </button>
+          ))}
+        </div>
+      ) : album.DRIVE_FOLDER_URL ? (
+        <div className="rounded-lg border border-gold/30 bg-gold/10 p-6 text-center text-navy">
+          Photos are available in the linked Google Drive album.
+        </div>
+      ) : null}
 
       {activePhoto ? (
         <div
