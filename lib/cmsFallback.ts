@@ -42,6 +42,7 @@ export const fallbackAlbums: GalleryAlbum[] = [
       "A public album of school building views, classrooms, activities, and learning spaces.",
     ALBUM_DATE: "2026-07-01",
     LOCATION: "Borabanda, Hyderabad",
+    DRIVE_FOLDER_URL: "",
     ALBUM_FOLDER_ID: "",
     COVER_PHOTO_ID: "LOCAL-PHOTO-1",
     COVER_PHOTO_URL: "/images/campus.jpg",

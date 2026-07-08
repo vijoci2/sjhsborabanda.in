@@ -64,6 +64,7 @@ export type GalleryAlbum = {
   DESCRIPTION: string;
   ALBUM_DATE: string;
   LOCATION: string;
+  DRIVE_FOLDER_URL: string;
   ALBUM_FOLDER_ID: string;
   COVER_PHOTO_ID: string;
   COVER_PHOTO_URL: string;
