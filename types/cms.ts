@@ -94,6 +94,14 @@ export type GalleryPhoto = {
   SOURCE_TYPE?: string;
 };
 
+export type PhotoPage = {
+  offset: number;
+  pageSize: number;
+  nextOffset: number;
+  hasMore: boolean;
+  totalCount: number;
+};
+
 export type ActivityLogEntry = {
   LOG_ID: string;
   USER_ID: string;
