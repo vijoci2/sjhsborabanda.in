@@ -6,6 +6,7 @@ import type {
   GalleryAlbum,
   GalleryPhoto,
   EventPhoto,
+  PhotoPage,
   UploadFilePayload
 } from "@/types/cms";
 
@@ -254,15 +255,28 @@ export const cmsApi = {
     return requestCms<{ albums: GalleryAlbum[] }>("getPublishedAlbums");
   },
 
-  getAlbumBySlug(slug: string) {
-    return requestCms<{ album: GalleryAlbum; photos: GalleryPhoto[] }>(
+  getAlbumBySlug(
+    slug: string,
+    options: { offset?: number; pageSize?: number } = {}
+  ) {
+    return requestCms<{
+      album: GalleryAlbum;
+      photos: GalleryPhoto[];
+      photoPage?: PhotoPage;
+    }>(
       "getAlbumBySlug",
-      { slug }
+      { slug, ...options }
     );
   },
 
-  getAlbumPhotos(albumId: string) {
-    return requestCms<{ photos: GalleryPhoto[] }>("getAlbumPhotos", { albumId });
+  getAlbumPhotos(
+    albumId: string,
+    options: { offset?: number; pageSize?: number } = {}
+  ) {
+    return requestCms<{ photos: GalleryPhoto[]; photoPage?: PhotoPage }>(
+      "getAlbumPhotos",
+      { albumId, ...options }
+    );
   },
 
   getAllAlbums() {

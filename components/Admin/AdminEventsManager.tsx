@@ -80,17 +80,18 @@ export function AdminEventsManager() {
           <p className="text-sm font-bold uppercase tracking-[0.16em] text-gold">
             Permanent Event Diary
           </p>
-          <h2 className="mt-2 text-3xl font-bold text-navy">Events</h2>
+          <h2 className="mt-2 text-3xl font-bold text-navy">News & Events</h2>
           <p className="mt-2 max-w-2xl leading-7 text-slate-600">
-            Keep upcoming, today, and past events as a permanent archive. Add
-            new photographs later without replacing old records.
+            Add latest news, upcoming programmes, today&apos;s events, and past
+            school activities as a permanent archive. Add photographs later
+            without replacing old records.
           </p>
         </div>
         <Link
           href="/admin/events/new"
           className="focus-ring rounded-md bg-navy px-5 py-3 text-center text-sm font-bold uppercase tracking-[0.12em] text-white"
         >
-          Add Event
+          Add News / Event
         </Link>
       </div>
 

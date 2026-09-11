@@ -9,7 +9,7 @@ import type { AdminUser } from "@/types/cms";
 
 const adminLinks = [
   { label: "Overview", href: "/admin/dashboard" },
-  { label: "Upcoming Events", href: "/admin/events" },
+  { label: "News & Events", href: "/admin/events" },
   { label: "Gallery", href: "/admin/gallery" }
 ];
 

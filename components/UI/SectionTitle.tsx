@@ -15,8 +15,8 @@ export function SectionTitle({
         align === "center" ? "text-center" : "text-left"
       }`}
     >
-      <div className="mx-auto mb-4 h-1 w-14 rounded-full bg-gold" />
-      <h2 className="text-balance text-3xl font-bold tracking-tight text-navy md:text-4xl">
+      <div className={`mb-4 h-1 w-10 bg-gold ${align === "center" ? "mx-auto" : ""}`} />
+      <h2 className="text-balance text-3xl font-bold text-navy md:text-4xl">
         {title}
       </h2>
       {description ? (

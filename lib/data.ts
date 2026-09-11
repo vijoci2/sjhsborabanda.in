@@ -6,10 +6,9 @@ export const school = {
   parentTrust: "Maram Joji Educational Trust",
   location: "Borabanda, Hyderabad, Telangana, India",
   address: "8-3-169/253, 254 & 255, Borabanda, Hyderabad, Telangana, India",
-  phone: "+91 40 0000 0000",
-  email: "office@stjosephsborabanda.edu.in",
+  phone: "+91 99480 30806",
   timings: "Monday to Saturday, 8:30 AM - 4:00 PM",
-  whatsapp: "https://wa.me/914000000000?text=Hello%20St.%20Joseph's%20High%20School%2C%20I%20would%20like%20to%20enquire%20about%20admissions.",
+  whatsapp: "https://wa.me/919948030806?text=Hello%20St.%20Joseph's%20High%20School%2C%20I%20would%20like%20to%20enquire%20about%20admissions.",
   googleMapsUrl: "https://share.google/Y9K4m8M0XjiqId8rr",
   tagline: "Educating Minds. Building Character. Inspiring Futures.",
   philosophy: "Education is the ultimate source of empowerment.",
@@ -18,20 +17,29 @@ export const school = {
 
 export const schoolUnits = [
   {
-    name: "St. Joseph's High School",
-    inCharge: "Maram Vijaya Prasad",
-    address: "8-3-169/253, 254 & 255, Borabanda, Hyderabad, Telangana, India"
+    name: "St. Joseph's Pre Primary School",
+    shortName: "Pre Primary School",
+    photoKind: "preprimary",
+    inCharge: "Kakumanu Nirmala Mary",
+    phone: "+91 99851 81299",
+    address: "8-3-169/64 & 65, Borabanda, Hyderabad, Telangana, India"
   },
   {
     name: "St. Joseph's Primary School",
+    shortName: "Primary School",
+    photoKind: "primary",
     inCharge: "Maram Vijoci Dev",
+    phone: "+91 97014 13350",
     address:
       "8-3-169/311, 312, 289 & 290, Habeeb Fatima Nagar, Borabanda, Hyderabad, Telangana, India"
   },
   {
-    name: "St. Joseph's Pre Primary School",
-    inCharge: "Kakumanu Nirmala Mary",
-    address: "8-3-169/64 & 65, Borabanda, Hyderabad, Telangana, India"
+    name: "St. Joseph's High School",
+    shortName: "High School",
+    photoKind: "high",
+    inCharge: "Maram Vijaya Prasad",
+    phone: "+91 94406 68430",
+    address: "8-3-169/253, 254 & 255, Borabanda, Hyderabad, Telangana, India"
   }
 ];
 
@@ -40,6 +48,7 @@ export const navLinks = [
   { label: "About Us", href: "/about" },
   { label: "Our Leadership", href: "/about#leadership" },
   { label: "Events", href: "/events" },
+  { label: "Gallery", href: "/gallery" },
   { label: "Admissions", href: "/admissions" },
   { label: "Contact Us", href: "/contact" }
 ];
@@ -49,7 +58,6 @@ export const allPageLinks = [
   { label: "Academics", href: "/academics" },
   { label: "Facilities", href: "/facilities" },
   { label: "News & Events", href: "/news-events" },
-  { label: "Gallery", href: "/gallery" },
   { label: "Alumni", href: "/alumni" }
 ];
 
@@ -123,9 +131,9 @@ export const chooseItems = [
     symbol: "AC"
   },
   {
-    title: "Transport",
-    description: "Public-facing transport information and enquiry support for parents.",
-    symbol: "TR"
+    title: "Parent Partnership",
+    description: "Open communication between families, teachers, and school leadership.",
+    symbol: "PP"
   },
   {
     title: "Safety & Care",
@@ -163,81 +171,37 @@ export const academicLevels = [
   }
 ];
 
-export const newsItems = [
-  {
-    title: "Admissions Open",
-    date: "2026-06-10",
-    description:
-      "Admissions enquiry for the new academic year is open. Parents can submit an enquiry through the admissions page."
-  },
-  {
-    title: "Annual Day Celebration",
-    date: "2026-07-20",
-    description:
-      "Students will showcase music, dance, theatre, and cultural performances during the annual day program."
-  },
-  {
-    title: "Science Fair",
-    date: "2026-08-05",
-    description:
-      "The campus science fair will feature model displays, demonstrations, and student-led explanation booths."
-  },
-  {
-    title: "Sports Meet",
-    date: "2026-08-24",
-    description:
-      "Inter-house athletics and team events will encourage fitness, teamwork, and healthy competition."
-  },
-  {
-    title: "Exam Schedule",
-    date: "2026-09-02",
-    description:
-      "Term assessment schedule and public circulars will be shared through official school communication channels."
-  }
-];
+export const newsItems: {
+  title: string;
+  date: string;
+  description: string;
+}[] = [];
 
-export const events = [
-  {
-    date: "18 Jul",
-    title: "Parent Orientation",
-    description:
-      "A welcoming session for families to understand school routines, safety expectations, and academic support."
-  },
-  {
-    date: "05 Aug",
-    title: "Science Fair",
-    description:
-      "Hands-on models, demonstrations, and student presentations across science and environment themes."
-  },
-  {
-    date: "24 Aug",
-    title: "Sports Meet",
-    description:
-      "Track, field, and team events designed to celebrate effort, discipline, and sportsmanship."
-  }
-];
+export const events: {
+  date: string;
+  title: string;
+  description: string;
+}[] = [];
 
 export const stats = [
   { value: "1992", label: "Established" },
   { value: "34", label: "Years of Educational Excellence" },
-  { value: "5000+", label: "Students" },
   { value: "1988", label: "Best Teacher Award Inspiration" },
-  { value: "100+", label: "Awards & Recognitions" }
 ];
 
 export const galleryItems = [
   {
-    title: "Annual Day",
-    category: "Celebrations",
+    title: "School Assembly",
+    category: "Activities",
     image: "/images/gallery/annual-day.jpg"
   },
   {
-    title: "Sports",
-    category: "Sports",
+    title: "Indoor Play Area",
+    category: "Early Years",
     image: "/images/sports/sports.jpg"
   },
   {
-    title: "Science Lab",
+    title: "Digital Learning",
     category: "Academics",
     image: "/images/labs/science-lab.jpg"
   },
@@ -257,12 +221,12 @@ export const galleryItems = [
     image: "/images/gallery/building-main.jpg"
   },
   {
-    title: "Library",
-    category: "Academics",
+    title: "Indoor Games",
+    category: "Activities",
     image: "/images/gallery/gallery-2.jpg"
   },
   {
-    title: "Student Activities",
+    title: "Classroom Activities",
     category: "Activities",
     image: "/images/gallery/gallery-3.jpg"
   }
@@ -276,28 +240,28 @@ export const facilities = [
       "Bright learning spaces planned for attention, discussion, reading, and daily class routines."
   },
   {
-    title: "Science Laboratories",
+    title: "Digital Learning Classrooms",
     image: "/images/labs/science-lab.jpg",
     description:
-      "Dedicated lab exposure helps students connect theory with observation and experimentation."
+      "Smart classroom teaching supports visual learning, explanation, discussion, and concept clarity."
   },
   {
-    title: "Sports & Play Areas",
+    title: "Early Years Play Area",
     image: "/images/sports/sports.jpg",
     description:
-      "Outdoor activity and sports practice support fitness, confidence, and teamwork."
+      "Bright indoor play spaces help young learners build confidence, coordination, and social habits."
   },
   {
-    title: "Cultural Stage",
+    title: "School Assembly & Activities",
     image: "/images/gallery/annual-day.jpg",
     description:
-      "Assemblies and cultural programs give students a respectful platform for expression."
+      "Regular assemblies and student activities build confidence, discipline, and shared school culture."
   },
   {
-    title: "Reading Corners",
+    title: "Indoor Games",
     image: "/images/gallery/gallery-2.jpg",
     description:
-      "Quiet reading spaces encourage vocabulary, comprehension, and independent study habits."
+      "Structured indoor games encourage concentration, patience, and healthy peer interaction."
   },
   {
     title: "Safe Campus",
@@ -338,13 +302,16 @@ export const leadershipTeam = [
   {
     name: "Maram Vijaya Prasad",
     role: "Correspondent",
+    phone: "+91 94406 68430",
     image: "/images/correspondent.jpg",
     bio:
       "As Correspondent, Maram Vijaya Prasad supports the school's administration, institutional coordination, infrastructure planning, and strategic growth with a disciplined educational vision."
   },
   {
-    name: "Kakumanu Swarna Ravali, B.Sc., B.Ed.",
+    name: "Kakumanu Swarna Ravali",
+    qualification: "B.Sc., B.Ed.",
     role: "Vice Principal",
+    phone: "+91 99480 30806",
     image: "/images/vice-principal.jpg",
     bio:
       "As Vice Principal, Kakumanu Swarna Ravali supports daily academic discipline, classroom coordination, student care, and parent communication with a steady focus on meaningful learning."
@@ -352,6 +319,7 @@ export const leadershipTeam = [
   {
     name: "Kakumanu Nirmala Mary",
     role: "Principal",
+    phone: "+91 99851 81299",
     image: "/images/principal.jpg",
     bio:
       "As Principal, Kakumanu Nirmala Mary guides the school's academic operations, classroom standards, faculty coordination, and disciplined learning environment."
@@ -359,6 +327,7 @@ export const leadershipTeam = [
   {
     name: "Maram Vijoci Dev",
     role: "Director",
+    phone: "+91 97014 13350",
     image: "/images/director.jpg",
     bio:
       "As Director, Maram Vijoci Dev bridges modern technology with traditional educational values and steers the school's long-term vision, digital learning, and innovation."

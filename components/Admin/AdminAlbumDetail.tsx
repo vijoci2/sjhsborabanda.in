@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { cmsApi } from "@/lib/appsScriptApi";
 import { formatCmsDate } from "@/lib/cmsFallback";
-import type { GalleryAlbum, GalleryPhoto } from "@/types/cms";
+import type { GalleryAlbum, GalleryPhoto, PhotoPage } from "@/types/cms";
 import { AdminAlbumForm } from "@/components/Admin/AdminAlbumForm";
 import { SmartImage } from "@/components/UI/SmartImage";
 
@@ -17,9 +17,12 @@ export function AdminAlbumDetail({ albumId }: { albumId: string }) {
   const searchParams = useSearchParams();
   const [album, setAlbum] = useState<GalleryAlbum | null>(null);
   const [photos, setPhotos] = useState<GalleryPhoto[]>([]);
+  const [photoPage, setPhotoPage] = useState<PhotoPage | null>(null);
   const [shareLink, setShareLink] = useState("");
   const [message, setMessage] = useState("Loading album...");
   const [saving, setSaving] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [activeIndex, setActiveIndex] = useState<number | null>(null);
 
   const editing = searchParams.get("edit") === "1";
 
@@ -43,12 +46,42 @@ export function AdminAlbumDetail({ albumId }: { albumId: string }) {
     setAlbum(foundAlbum);
     setShareLink(foundAlbum.DRIVE_FOLDER_URL || "");
     setPhotos(photosResponse.success ? photosResponse.data?.photos ?? [] : []);
+    setPhotoPage(photosResponse.success ? photosResponse.data?.photoPage ?? null : null);
     setMessage("");
   }
 
   useEffect(() => {
     loadAlbum();
   }, [albumId]);
+
+  const orderedPhotos = useMemo(
+    () =>
+      photos
+        .slice()
+        .sort((a, b) => Number(a.DISPLAY_ORDER) - Number(b.DISPLAY_ORDER)),
+    [photos]
+  );
+
+  useEffect(() => {
+    function handleKey(event: KeyboardEvent) {
+      if (activeIndex === null || !orderedPhotos.length) {
+        return;
+      }
+
+      if (event.key === "Escape") {
+        setActiveIndex(null);
+      }
+      if (event.key === "ArrowRight") {
+        setActiveIndex((activeIndex + 1) % orderedPhotos.length);
+      }
+      if (event.key === "ArrowLeft") {
+        setActiveIndex((activeIndex - 1 + orderedPhotos.length) % orderedPhotos.length);
+      }
+    }
+
+    window.addEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
+  }, [activeIndex, orderedPhotos.length]);
 
   async function saveShareLink() {
     const cleanLink = extractSharedAlbumUrl(shareLink);
@@ -85,6 +118,29 @@ export function AdminAlbumDetail({ albumId }: { albumId: string }) {
     await loadAlbum();
   }
 
+  async function loadMorePhotos() {
+    if (!photoPage?.hasMore || loadingMore) {
+      return;
+    }
+
+    setLoadingMore(true);
+    const response = await cmsApi.getAlbumPhotos(albumId, {
+      offset: photoPage.nextOffset,
+      pageSize: photoPage.pageSize
+    });
+    if (response.success) {
+      setPhotos((currentPhotos) => [
+        ...currentPhotos,
+        ...(response.data?.photos ?? [])
+      ]);
+      setPhotoPage(response.data?.photoPage ?? null);
+      setMessage("");
+    } else {
+      setMessage(response.message);
+    }
+    setLoadingMore(false);
+  }
+
   async function updatePhoto(photoId: string, updates: Partial<GalleryPhoto>) {
     setSaving(true);
     const response = await cmsApi.updateGalleryPhoto(photoId, updates);
@@ -116,6 +172,9 @@ export function AdminAlbumDetail({ albumId }: { albumId: string }) {
   if (editing) {
     return <AdminAlbumForm albumId={albumId} />;
   }
+
+  const activePhoto = activeIndex !== null ? orderedPhotos[activeIndex] : null;
+  const currentIndex = activeIndex ?? 0;
 
   return (
     <div className="grid gap-6">
@@ -187,13 +246,15 @@ export function AdminAlbumDetail({ albumId }: { albumId: string }) {
       ) : null}
 
       <div className="grid gap-5 md:grid-cols-2">
-        {photos.length ? (
-          photos
-            .slice()
-            .sort((a, b) => Number(a.DISPLAY_ORDER) - Number(b.DISPLAY_ORDER))
-            .map((photo) => (
+        {orderedPhotos.length ? (
+          orderedPhotos
+            .map((photo, index) => (
               photo.SOURCE_TYPE === "SHARED_LINK" ? (
-                <LinkedPhotoPreview key={photo.PHOTO_ID} photo={photo} />
+                <LinkedPhotoPreview
+                  key={photo.PHOTO_ID}
+                  photo={photo}
+                  onOpen={() => setActiveIndex(index)}
+                />
               ) : (
                 <PhotoEditor
                   key={photo.PHOTO_ID}
@@ -202,6 +263,7 @@ export function AdminAlbumDetail({ albumId }: { albumId: string }) {
                   onSave={updatePhoto}
                   onDelete={deletePhoto}
                   onCover={setCover}
+                  onOpen={() => setActiveIndex(index)}
                 />
               )
             ))
@@ -209,23 +271,99 @@ export function AdminAlbumDetail({ albumId }: { albumId: string }) {
           <div className="rounded-lg bg-white p-6 text-center text-slate-600 shadow-sm">
             {album?.DRIVE_FOLDER_URL
               ? "No images could be read from this shared link yet. Check that the Drive folder is public, or use the original shared album link."
-              : "Paste a shared photo album link above and submit."}
+            : "Paste a shared photo album link above and submit."}
           </div>
         )}
       </div>
+
+      {photoPage ? (
+        <div className="flex flex-col items-center gap-3 rounded-lg bg-white p-5 text-center shadow-sm">
+          <p className="text-sm font-semibold text-slate-500">
+            Showing {orderedPhotos.length} of {photoPage.totalCount} photos
+          </p>
+          {photoPage.hasMore ? (
+            <button
+              type="button"
+              disabled={loadingMore}
+              onClick={loadMorePhotos}
+              className="focus-ring rounded-md bg-navy px-5 py-3 text-sm font-bold uppercase tracking-[0.12em] text-white disabled:opacity-60"
+            >
+              {loadingMore ? "Loading..." : "Load More Photos"}
+            </button>
+          ) : null}
+        </div>
+      ) : null}
+
+      {activePhoto ? (
+        <div
+          className="fixed inset-0 z-[80] flex items-center justify-center bg-navy-dark/92 p-4"
+          role="dialog"
+          aria-modal="true"
+        >
+          <div className="relative max-h-full w-full max-w-5xl">
+            <button
+              type="button"
+              onClick={() => setActiveIndex(null)}
+              className="focus-ring absolute right-0 top-0 z-10 rounded-md bg-white px-3 py-2 text-sm font-bold text-navy"
+            >
+              Close
+            </button>
+            <SmartImage
+              src={activePhoto.IMAGE_URL}
+              alt={activePhoto.ALT_TEXT || activePhoto.CAPTION || album?.TITLE || "Photo"}
+              fallbackLabel="Photo"
+              className="max-h-[82vh] w-full rounded-lg object-contain"
+            />
+            <div className="mt-3 flex items-center justify-between gap-3 text-white">
+              <button
+                type="button"
+                onClick={() =>
+                  setActiveIndex(
+                    (currentIndex - 1 + orderedPhotos.length) % orderedPhotos.length
+                  )
+                }
+                className="focus-ring rounded-md border border-white/30 px-3 py-2 text-sm font-bold"
+              >
+                Previous
+              </button>
+              <p className="text-center text-sm">
+                {activePhoto.CAPTION || activePhoto.FILE_NAME}
+                <span className="block text-white/70">
+                  {currentIndex + 1} of {orderedPhotos.length}
+                </span>
+              </p>
+              <button
+                type="button"
+                onClick={() => setActiveIndex((currentIndex + 1) % orderedPhotos.length)}
+                className="focus-ring rounded-md border border-white/30 px-3 py-2 text-sm font-bold"
+              >
+                Next
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }
 
-function LinkedPhotoPreview({ photo }: { photo: GalleryPhoto }) {
+function LinkedPhotoPreview({
+  photo,
+  onOpen
+}: {
+  photo: GalleryPhoto;
+  onOpen: () => void;
+}) {
   return (
     <article className="overflow-hidden rounded-lg bg-white shadow-sm">
-      <SmartImage
-        src={photo.THUMBNAIL_URL || photo.IMAGE_URL}
-        alt={photo.ALT_TEXT || "Linked gallery photograph"}
-        fallbackLabel="Linked Photo"
-        className="aspect-[3/2] w-full object-cover"
-      />
+      <button type="button" onClick={onOpen} className="block w-full text-left">
+        <SmartImage
+          src={photo.THUMBNAIL_URL || photo.IMAGE_URL}
+          alt={photo.ALT_TEXT || "Linked gallery photograph"}
+          fallbackLabel="Linked Photo"
+          className="aspect-[3/2] w-full object-cover"
+        />
+      </button>
       <div className="grid gap-2 p-4">
         <p className="text-sm font-bold text-navy">{photo.FILE_NAME}</p>
         <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
@@ -241,13 +379,15 @@ function PhotoEditor({
   saving,
   onSave,
   onDelete,
-  onCover
+  onCover,
+  onOpen
 }: {
   photo: GalleryPhoto;
   saving: boolean;
   onSave: (photoId: string, updates: Partial<GalleryPhoto>) => Promise<void>;
   onDelete: (photoId: string) => Promise<void>;
   onCover: (photoId: string) => Promise<void>;
+  onOpen: () => void;
 }) {
   const [caption, setCaption] = useState(photo.CAPTION);
   const [personNames, setPersonNames] = useState(photo.PERSON_NAMES);
@@ -256,12 +396,14 @@ function PhotoEditor({
 
   return (
     <article className="overflow-hidden rounded-lg bg-white shadow-sm">
-      <SmartImage
-        src={photo.IMAGE_URL}
-        alt={photo.ALT_TEXT || photo.CAPTION || "Gallery photograph"}
-        fallbackLabel="Photo"
-        className="aspect-[3/2] w-full object-cover"
-      />
+      <button type="button" onClick={onOpen} className="block w-full text-left">
+        <SmartImage
+          src={photo.IMAGE_URL}
+          alt={photo.ALT_TEXT || photo.CAPTION || "Gallery photograph"}
+          fallbackLabel="Photo"
+          className="aspect-[3/2] w-full object-cover"
+        />
+      </button>
       <div className="grid gap-3 p-4">
         <input
           value={caption}

@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useState } from "react";
+import { school } from "@/lib/data";
 
 type ContactFormProps = {
   mode?: "contact" | "admission" | "alumni";
@@ -9,20 +10,20 @@ type ContactFormProps = {
 const modeContent = {
   contact: {
     title: "Send an Enquiry",
-    button: "Submit Enquiry",
-    success: "Thank you. Your enquiry UI has been captured locally for demo purposes."
+    button: "Continue in WhatsApp",
+    success: "Your enquiry is ready in WhatsApp. Press Send there to share it with the school."
   },
   admission: {
     title: "Admission Enquiry Form",
-    button: "Submit Admission Enquiry",
+    button: "Continue in WhatsApp",
     success:
-      "Thank you. This is a front-end enquiry preview; connect a secure backend before collecting real applications."
+      "Your admission enquiry is ready in WhatsApp. Press Send there to share it with the school."
   },
   alumni: {
     title: "Alumni Registration",
-    button: "Register Interest",
+    button: "Continue in WhatsApp",
     success:
-      "Thank you. This alumni registration UI is ready for a secure backend connection."
+      "Your message is ready in WhatsApp. Press Send there to share it with the school."
   }
 };
 
@@ -34,6 +35,18 @@ export function ContactForm({ mode = "contact" }: ContactFormProps) {
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    const fields = new FormData(event.currentTarget);
+    const labels: Record<string, string> = {
+      name: "Name", email: "Email", phone: "Phone", class: "Class",
+      time: "Preferred time", passingYear: "Passing year", field: "Current field", message: "Message"
+    };
+    const lines = [content.title];
+    fields.forEach((value, key) => {
+      if (typeof value === "string" && value.trim()) lines.push(labels[key] + ": " + value.trim());
+    });
+    const whatsapp = new URL(school.whatsapp);
+    whatsapp.searchParams.set("text", lines.join("\n"));
+    window.open(whatsapp.toString(), "_blank", "noopener,noreferrer");
     setSubmitted(true);
   }
 
@@ -44,8 +57,7 @@ export function ContactForm({ mode = "contact" }: ContactFormProps) {
     >
       <h2 className="text-2xl font-bold text-navy">{content.title}</h2>
       <p className="mt-2 text-sm leading-6 text-slate-600">
-        Please share public enquiry information only. Do not submit marks, fee
-        records, personal addresses, ID numbers, or private student records.
+        Your message opens in WhatsApp for you to review and send to the school.
       </p>
 
       <div className="mt-6 grid gap-5">
@@ -64,7 +76,6 @@ export function ContactForm({ mode = "contact" }: ContactFormProps) {
           <label className="grid gap-2 text-sm font-semibold text-navy">
             Email
             <input
-              required
               name="email"
               type="email"
               className="rounded-md border border-slate-300 px-4 py-3 text-base text-ink outline-none transition focus:border-gold focus:ring-4 focus:ring-gold/20"
@@ -77,7 +88,7 @@ export function ContactForm({ mode = "contact" }: ContactFormProps) {
               name="phone"
               type="tel"
               className="rounded-md border border-slate-300 px-4 py-3 text-base text-ink outline-none transition focus:border-gold focus:ring-4 focus:ring-gold/20"
-              placeholder="Public enquiry number"
+              placeholder="Your contact number"
             />
           </label>
         </div>

@@ -8,7 +8,7 @@ import {
   fallbackGalleryPhotos,
   formatCmsDate
 } from "@/lib/cmsFallback";
-import type { GalleryAlbum, GalleryPhoto } from "@/types/cms";
+import type { GalleryAlbum, GalleryPhoto, PhotoPage } from "@/types/cms";
 import { SmartImage } from "@/components/UI/SmartImage";
 
 export function PublicGalleryAlbums() {
@@ -33,45 +33,51 @@ export function PublicGalleryAlbums() {
         </div>
       ) : null}
       <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
-        {albums.map((album) => (
-          <article
-            key={album.ALBUM_ID}
-            className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-lift"
-          >
-            {album.COVER_PHOTO_URL ? (
-              <SmartImage
-                src={album.COVER_PHOTO_URL}
-                alt={album.TITLE}
-                fallbackLabel="Album"
-                className="aspect-[3/2] w-full object-cover"
-              />
-            ) : (
-              <div className="flex aspect-[3/2] w-full items-center justify-center bg-gradient-to-br from-navy to-navy-dark p-6 text-center text-sm font-semibold uppercase tracking-[0.18em] text-white/80">
-                Shared Album
+        {albums.length ? (
+          albums.map((album) => (
+            <article
+              key={album.ALBUM_ID}
+              className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-lift"
+            >
+              {album.COVER_PHOTO_URL ? (
+                <SmartImage
+                  src={album.COVER_PHOTO_URL}
+                  alt={album.TITLE}
+                  fallbackLabel="Album"
+                  className="aspect-[3/2] w-full object-cover"
+                />
+              ) : (
+                <div className="flex aspect-[3/2] w-full items-center justify-center bg-gradient-to-br from-navy to-navy-dark p-6 text-center text-sm font-semibold uppercase tracking-[0.18em] text-white/80">
+                  Shared Album
+                </div>
+              )}
+              <div className="p-5">
+                <p className="text-sm font-bold text-gold">
+                  {formatCmsDate(album.ALBUM_DATE)}
+                </p>
+                <h2 className="mt-2 text-2xl font-bold text-navy">{album.TITLE}</h2>
+                <p className="mt-2 leading-7 text-slate-600">{album.DESCRIPTION}</p>
+                <p className="mt-3 text-sm font-semibold text-slate-500">
+                  {Number(album.PHOTO_COUNT ?? 0) > 0
+                    ? `${album.PHOTO_COUNT} photos`
+                    : album.DRIVE_FOLDER_URL
+                      ? "Shared album link"
+                      : "0 photos"}
+                </p>
+                <Link
+                  href={`/gallery/${album.SLUG}`}
+                  className="focus-ring mt-5 inline-flex rounded-md bg-navy px-4 py-2 text-sm font-bold text-white"
+                >
+                  View Album
+                </Link>
               </div>
-            )}
-            <div className="p-5">
-              <p className="text-sm font-bold text-gold">
-                {formatCmsDate(album.ALBUM_DATE)}
-              </p>
-              <h2 className="mt-2 text-2xl font-bold text-navy">{album.TITLE}</h2>
-              <p className="mt-2 leading-7 text-slate-600">{album.DESCRIPTION}</p>
-              <p className="mt-3 text-sm font-semibold text-slate-500">
-                {Number(album.PHOTO_COUNT ?? 0) > 0
-                  ? `${album.PHOTO_COUNT} photos`
-                  : album.DRIVE_FOLDER_URL
-                    ? "Shared album link"
-                    : "0 photos"}
-              </p>
-              <Link
-                href={`/gallery/${album.SLUG}`}
-                className="focus-ring mt-5 inline-flex rounded-md bg-navy px-4 py-2 text-sm font-bold text-white"
-              >
-                View Album
-              </Link>
-            </div>
-          </article>
-        ))}
+            </article>
+          ))
+        ) : (
+          <div className="rounded-lg border border-slate-200 bg-white p-6 text-slate-600 shadow-sm md:col-span-2 lg:col-span-3">
+            No gallery albums have been published yet.
+          </div>
+        )}
       </div>
     </div>
   );
@@ -83,7 +89,9 @@ export function PublicGalleryAlbumDetail({ slug }: { slug: string }) {
   const [photos, setPhotos] = useState<GalleryPhoto[]>(
     fallbackAlbum ? fallbackGalleryPhotos : []
   );
+  const [photoPage, setPhotoPage] = useState<PhotoPage | null>(null);
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [message, setMessage] = useState(fallbackAlbum ? "" : "Loading album...");
 
   useEffect(() => {
@@ -91,12 +99,36 @@ export function PublicGalleryAlbumDetail({ slug }: { slug: string }) {
       if (response.success && response.data?.album) {
         setAlbum(response.data.album);
         setPhotos(response.data.photos ?? []);
+        setPhotoPage(response.data.photoPage ?? null);
         setMessage("");
       } else if (!fallbackAlbum) {
         setMessage(response.message);
       }
     });
   }, [fallbackAlbum, slug]);
+
+  async function loadMorePhotos() {
+    if (!album || !photoPage?.hasMore || loadingMore) {
+      return;
+    }
+
+    setLoadingMore(true);
+    const response = await cmsApi.getAlbumPhotos(album.ALBUM_ID, {
+      offset: photoPage.nextOffset,
+      pageSize: photoPage.pageSize
+    });
+    if (response.success) {
+      setPhotos((currentPhotos) => [
+        ...currentPhotos,
+        ...(response.data?.photos ?? [])
+      ]);
+      setPhotoPage(response.data?.photoPage ?? null);
+      setMessage("");
+    } else {
+      setMessage(response.message);
+    }
+    setLoadingMore(false);
+  }
 
   useEffect(() => {
     function handleKey(event: KeyboardEvent) {
@@ -160,26 +192,45 @@ export function PublicGalleryAlbumDetail({ slug }: { slug: string }) {
       </div>
 
       {orderedPhotos.length ? (
-        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {orderedPhotos.map((photo, index) => (
-            <button
-              key={photo.PHOTO_ID}
-              type="button"
-              onClick={() => setActiveIndex(index)}
-              className="group overflow-hidden rounded-lg border border-slate-200 bg-white text-left shadow-sm"
-            >
-              <SmartImage
-                src={photo.THUMBNAIL_URL || photo.IMAGE_URL}
-                alt={photo.ALT_TEXT || photo.CAPTION || album.TITLE}
-                fallbackLabel="Photo"
-                className="aspect-[3/2] w-full object-cover transition duration-500 group-hover:scale-105"
-              />
-              {photo.CAPTION ? (
-                <p className="p-4 text-sm leading-6 text-slate-600">{photo.CAPTION}</p>
+        <>
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {orderedPhotos.map((photo, index) => (
+              <button
+                key={photo.PHOTO_ID}
+                type="button"
+                onClick={() => setActiveIndex(index)}
+                className="group overflow-hidden rounded-lg border border-slate-200 bg-white text-left shadow-sm"
+              >
+                <SmartImage
+                  src={photo.THUMBNAIL_URL || photo.IMAGE_URL}
+                  alt={photo.ALT_TEXT || photo.CAPTION || album.TITLE}
+                  fallbackLabel="Photo"
+                  className="aspect-[3/2] w-full object-cover transition duration-500 group-hover:scale-105"
+                />
+                {photo.CAPTION ? (
+                  <p className="p-4 text-sm leading-6 text-slate-600">{photo.CAPTION}</p>
+                ) : null}
+              </button>
+            ))}
+          </div>
+          {photoPage ? (
+            <div className="flex flex-col items-center gap-3">
+              <p className="text-sm font-semibold text-slate-500">
+                Showing {orderedPhotos.length} of {photoPage.totalCount} photos
+              </p>
+              {photoPage.hasMore ? (
+                <button
+                  type="button"
+                  disabled={loadingMore}
+                  onClick={loadMorePhotos}
+                  className="focus-ring rounded-md bg-navy px-5 py-3 text-sm font-bold uppercase tracking-[0.12em] text-white disabled:opacity-60"
+                >
+                  {loadingMore ? "Loading..." : "Load More Photos"}
+                </button>
               ) : null}
-            </button>
-          ))}
-        </div>
+            </div>
+          ) : null}
+        </>
       ) : album.DRIVE_FOLDER_URL ? (
         <div className="rounded-lg border border-gold/30 bg-gold/10 p-6 text-center text-navy">
           This shared album could not be displayed inside the website. Use the
