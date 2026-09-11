@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
-import { EventCard } from "@/components/Cards/EventCard";
+import { PublicEvents } from "@/components/CMS/PublicEvents";
 import { SectionTitle } from "@/components/UI/SectionTitle";
-import { events, newsItems } from "@/lib/data";
 
 export const metadata: Metadata = {
   title: "News & Events",
@@ -26,33 +25,11 @@ export default function NewsEventsPage() {
 
       <section className="section-y bg-white">
         <div className="site-container">
-          <SectionTitle title="Latest News" />
-          <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
-            {newsItems.map((item) => (
-              <article key={item.title} className="rounded-lg border border-slate-200 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-lift">
-                <p className="text-sm font-bold text-gold">
-                  {new Date(item.date).toLocaleDateString("en-IN", {
-                    day: "2-digit",
-                    month: "short",
-                    year: "numeric"
-                  })}
-                </p>
-                <h2 className="mt-3 text-2xl font-bold text-navy">{item.title}</h2>
-                <p className="mt-3 leading-7 text-slate-600">{item.description}</p>
-              </article>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="section-y bg-mist">
-        <div className="site-container">
-          <SectionTitle title="Upcoming Events" />
-          <div className="grid gap-5 md:grid-cols-3">
-            {events.map((event) => (
-              <EventCard key={event.title} {...event} />
-            ))}
-          </div>
+          <SectionTitle
+            title="Latest News & Upcoming Events"
+            description="Updates shown here are managed from the admin event diary."
+          />
+          <PublicEvents />
         </div>
       </section>
     </>

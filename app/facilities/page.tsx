@@ -6,7 +6,7 @@ import { facilities } from "@/lib/data";
 export const metadata: Metadata = {
   title: "Facilities",
   description:
-    "Facilities at St. Joseph's High School including classrooms, science labs, sports, cultural spaces, and campus care."
+    "Explore the classrooms, digital learning spaces, play areas, and activities at St. Joseph's High School."
 };
 
 export default function FacilitiesPage() {
@@ -28,7 +28,7 @@ export default function FacilitiesPage() {
         <div className="site-container">
           <SectionTitle
             title="Campus Facilities"
-            description="Clean image cards show public-facing facility areas without exposing private student information."
+            description="Explore our classrooms, play spaces, and the places where students learn together."
           />
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {facilities.map((facility) => (
@@ -40,7 +40,7 @@ export default function FacilitiesPage() {
                   src={facility.image}
                   alt={facility.title}
                   fallbackLabel={facility.title}
-                  className="h-60 w-full object-cover transition duration-500 group-hover:scale-105"
+                  className="aspect-[3/2] w-full bg-mist object-contain"
                 />
                 <div className="p-6">
                   <h2 className="text-2xl font-bold text-navy">{facility.title}</h2>

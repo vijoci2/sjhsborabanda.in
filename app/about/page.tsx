@@ -1,140 +1,89 @@
 import type { Metadata } from "next";
-import { Card } from "@/components/Cards/Card";
-import { SectionTitle } from "@/components/UI/SectionTitle";
+import Image from "next/image";
+import { LeadershipGrid } from "@/components/LeadershipGrid";
+import { SchoolCampuses } from "@/components/SchoolCampuses";
 import { SmartImage } from "@/components/UI/SmartImage";
-import {
-  aboutCards,
-  historyTimeline,
-  homeCopy,
-  leadershipTeam,
-  school
-} from "@/lib/data";
+import { historyTimeline, homeCopy, school } from "@/lib/data";
 
 export const metadata: Metadata = {
   title: "About Us",
-  description:
-    "Learn about St. Joseph's High School, its trust history, founders, values, mission, vision, and public school history."
+  description: "Meet our leadership and discover St. Joseph's High School, serving Borabanda since 1992."
 };
 
 export default function AboutPage() {
   return (
     <>
-      <section className="bg-navy py-20 text-white">
-        <div className="site-container max-w-4xl">
-          <h1 className="text-4xl font-bold tracking-tight md:text-6xl">
-            Welcome to {school.name}
-          </h1>
-          <p className="mt-6 text-xl leading-8 text-white/78">
-            Established in {school.establishedYear} under the aegis of the{" "}
-            {school.parentSociety}, the school continues its work of academic
-            excellence and character building.
-          </p>
+      <section className="page-intro">
+        <div className="site-container">
+          <p className="eyebrow">Our story</p>
+          <h1>About St. Joseph's</h1>
+          <p>A school community built on learning, character, and care. Serving families in Borabanda since {school.establishedYear}.</p>
         </div>
       </section>
-
       <section className="section-y bg-white">
-        <div className="site-container grid gap-10 lg:grid-cols-[1fr_1.1fr] lg:items-center">
-          <SmartImage
-            src="/images/campus.jpg"
-            alt="Campus view"
-            className="h-[420px] w-full rounded-lg object-cover shadow-soft"
-            fallbackLabel="Campus"
-          />
-          <div>
-            <SectionTitle align="left" title="Home Page / About Us" />
-            <div className="grid gap-5 text-lg leading-8 text-slate-600">
-              <p>{homeCopy.body}</p>
-              <p>{homeCopy.philosophy}</p>
-              <p>
-                The website shares only public information and avoids private
-                student data by design.
-              </p>
+        <div className="site-container grid items-center gap-10 lg:grid-cols-2 lg:gap-16">
+          <figure>
+            <div className="about-group-photo">
+              <Image src="/images/leadership-group.jpg" alt="St. Joseph's leadership: Maram Vijaya Prasad, Kakumanu Nirmala Mary, Maram Vijoci Dev, and Kakumanu Swarna Ravali" width={5568} height={3712} sizes="(min-width: 1024px) 820px, 132vw" priority />
             </div>
+            <figcaption className="mt-4 text-sm leading-6 text-slate-600">Our school leadership, united by a commitment to education.</figcaption>
+          </figure>
+          <div>
+            <p className="eyebrow">Since 1992</p>
+            <h2 className="section-headline mt-3">Education with Purpose</h2>
+            <p className="mt-5 leading-8 text-slate-600">{homeCopy.body}</p>
+            <blockquote className="mt-6 border-l-4 border-gold pl-5 text-xl font-medium leading-8 text-navy">{school.philosophy}</blockquote>
           </div>
         </div>
       </section>
-
-      <section className="section-y bg-mist">
-        <div className="site-container grid gap-6 lg:grid-cols-2">
-          <article className="rounded-lg bg-white p-7 shadow-sm">
-            <p className="text-sm font-bold uppercase tracking-[0.16em] text-gold">
-              Trust History & Founders
-            </p>
-            <h2 className="mt-3 text-3xl font-bold text-navy">
-              {homeCopy.heritageTitle}
-            </h2>
-            <p className="mt-4 leading-7 text-slate-600">{homeCopy.heritage}</p>
-          </article>
-          <article className="rounded-lg bg-white p-7 shadow-sm">
-            <p className="text-sm font-bold uppercase tracking-[0.16em] text-gold">
-              Founding Framework
-            </p>
-            <h2 className="mt-3 text-3xl font-bold text-navy">
-              {homeCopy.foundingTitle}
-            </h2>
-            <p className="mt-4 leading-7 text-slate-600">{homeCopy.founding}</p>
-          </article>
+      <SchoolCampuses />
+      <section className="section-y bg-white">
+        <div className="site-container grid gap-10 md:grid-cols-2">
+          <div>
+            <p className="eyebrow">Our heritage</p>
+            <h2 className="mt-3 text-3xl font-bold text-navy">The Maram Joji Educational Trust</h2>
+            <p className="mt-5 leading-8 text-slate-600">{homeCopy.heritage}</p>
+            <p className="mt-4 leading-8 text-slate-600">{homeCopy.philosophy}</p>
+          </div>
+          <div>
+            <p className="eyebrow">Our foundation</p>
+            <h2 className="mt-3 text-3xl font-bold text-navy">Discipline, Integrity, Accountability</h2>
+            <p className="mt-5 leading-8 text-slate-600">{homeCopy.founding}</p>
+          </div>
         </div>
       </section>
-
+      <section className="section-y border-y border-slate-200 bg-mist" id="leadership">
+        <div className="site-container">
+          <div className="section-heading"><div><p className="eyebrow">Meet our team</p><h2>Our Leadership</h2></div></div>
+          <LeadershipGrid />
+        </div>
+      </section>
       <section className="section-y bg-white">
         <div className="site-container">
-          <SectionTitle title="Vision, Mission, Values" />
-          <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-5">
-            {aboutCards.map((card) => (
-              <Card key={card.title} {...card} />
+          <div className="section-heading"><div><p className="eyebrow">Beyond the classroom</p><h2>Space to Learn, Play, and Belong</h2></div></div>
+          <div className="grid gap-6 md:grid-cols-3">
+            {[
+              { image: "/images/gallery/gallery-3.jpg", title: "Learning through activity" },
+              { image: "/images/gallery/gallery-2.jpg", title: "Thinking, sharing, playing" },
+              { image: "/images/gallery/gallery-1.jpg", title: "Growing together" }
+            ].map((item) => (
+              <figure key={item.image}>
+                <SmartImage src={item.image} alt={item.title} className="aspect-[3/2] w-full rounded-lg object-contain" />
+                <figcaption className="mt-4 font-semibold text-navy">{item.title}</figcaption>
+              </figure>
             ))}
           </div>
         </div>
       </section>
-
-      <section className="section-y bg-mist">
+      <section className="section-y border-t border-slate-200 bg-mist">
         <div className="site-container">
-          <SectionTitle
-            title="School History Timeline"
-            description="A concise public timeline that can be expanded with verified archival details."
-          />
-          <div className="grid gap-5 md:grid-cols-2">
+          <div className="section-heading"><div><p className="eyebrow">Our journey</p><h2>Built on a Lasting Foundation</h2></div></div>
+          <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
             {historyTimeline.map((item) => (
-              <article key={item.year} className="rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
-                <p className="text-sm font-bold uppercase tracking-[0.16em] text-gold">
-                  {item.year}
-                </p>
-                <h2 className="mt-3 text-2xl font-bold text-navy">{item.title}</h2>
-                <p className="mt-3 leading-7 text-slate-600">{item.description}</p>
-              </article>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section id="leadership" className="section-y bg-white">
-        <div className="site-container">
-          <SectionTitle
-            title="Our Leadership Team"
-            description="Meet the team responsible for academic operations, long-term vision, infrastructure, and strategic growth."
-          />
-          <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
-            {leadershipTeam.map((leader) => (
-              <article
-                key={leader.name}
-                className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-soft"
-              >
-                <SmartImage
-                  src={leader.image}
-                  alt={leader.name}
-                  fallbackLabel={leader.role}
-                  className="aspect-[3/2] w-full bg-mist object-cover object-center"
-                />
-                <div className="p-6">
-                  <p className="text-sm font-bold uppercase tracking-[0.16em] text-gold">
-                    {leader.role}
-                  </p>
-                  <h2 className="mt-3 text-2xl font-bold leading-tight text-navy">
-                    {leader.name}
-                  </h2>
-                  <p className="mt-4 leading-7 text-slate-600">{leader.bio}</p>
-                </div>
+              <article key={item.year} className="border-t-2 border-gold pt-5">
+                <p className="text-sm font-semibold text-slate-600">{item.year}</p>
+                <h3 className="mt-3 text-xl font-bold text-navy">{item.title}</h3>
+                <p className="mt-3 text-sm leading-7 text-slate-600">{item.description}</p>
               </article>
             ))}
           </div>

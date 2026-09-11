@@ -127,7 +127,7 @@ var IMAGE_TYPES = {
 
 var MAX_IMAGE_BYTES = 8 * 1024 * 1024;
 var MAX_BATCH_IMAGES = 25;
-var MAX_LINKED_ALBUM_IMAGES = 120;
+var LINKED_ALBUM_PAGE_SIZE = 36;
 var SESSION_HOURS = 8;
 var DATABASE_SPREADSHEET_ID = "1oet7lULdj8qqXTMGc9itXP7yccCpIDzDi7w9FdtRidk";
 var DEFAULT_ADMIN_USERNAME = "admin";
@@ -719,9 +719,11 @@ function getAlbumBySlug(payload) {
   if (!album) {
     return jsonError("Album not found.", "NOT_FOUND");
   }
+  var pageResult = getAlbumPhotoPage(album.ALBUM_ID, album, normalizePhotoPage(payload));
   return jsonSuccess("Album loaded.", {
     album: album,
-    photos: getAlbumPhotoRows(album.ALBUM_ID, album)
+    photos: pageResult.photos,
+    photoPage: pageResult.page
   });
 }
 
@@ -732,7 +734,25 @@ function getAlbumPhotos(payload) {
   if (!album) {
     return jsonError("Album not found.", "NOT_FOUND");
   }
-  return jsonSuccess("Album photos loaded.", { photos: getAlbumPhotoRows(albumId, album) });
+  var pageResult = getAlbumPhotoPage(albumId, album, normalizePhotoPage(payload));
+  return jsonSuccess("Album photos loaded.", {
+    photos: pageResult.photos,
+    photoPage: pageResult.page
+  });
+}
+
+function normalizePhotoPage(payload) {
+  payload = payload || {};
+  var offset = Math.max(0, Number(payload.offset || 0));
+  var requestedPageSize = Number(payload.pageSize || LINKED_ALBUM_PAGE_SIZE);
+  var pageSize = Math.max(
+    1,
+    Math.min(requestedPageSize, LINKED_ALBUM_PAGE_SIZE)
+  );
+  return {
+    offset: offset,
+    pageSize: pageSize
+  };
 }
 
 function getAllAlbums(payload) {
@@ -850,7 +870,7 @@ function uploadGalleryPhotos(payload) {
   }
 
   var folder = DriveApp.getFolderById(album.ALBUM_FOLDER_ID);
-  var existingPhotos = getAlbumPhotoRows(albumId);
+  var existingPhotos = getStoredAlbumPhotoRows(albumId);
   var nextOrder = existingPhotos.length + 1;
   var savedPhotos = [];
 
@@ -925,7 +945,7 @@ function deleteGalleryPhoto(payload) {
   trashFileSafely(photo.DRIVE_FILE_ID, [album.ALBUM_FOLDER_ID]);
   deleteRowById("GALLERY_PHOTOS", "PHOTO_ID", photoId);
   if (album.COVER_PHOTO_ID === photoId) {
-    var nextPhoto = getAlbumPhotoRows(album.ALBUM_ID)[0];
+    var nextPhoto = getStoredAlbumPhotoRows(album.ALBUM_ID)[0];
     updateRowById("GALLERY_ALBUMS", "ALBUM_ID", album.ALBUM_ID, {
       COVER_PHOTO_ID: nextPhoto ? nextPhoto.PHOTO_ID : "",
       COVER_PHOTO_URL: nextPhoto ? nextPhoto.IMAGE_URL : "",
@@ -980,7 +1000,7 @@ function deleteAlbum(payload) {
   if (!album) {
     return jsonError("Album not found.", "NOT_FOUND");
   }
-  var photos = getAlbumPhotoRows(albumId);
+  var photos = getStoredAlbumPhotoRows(albumId);
   photos.forEach(function (photo) {
     trashFileSafely(photo.DRIVE_FILE_ID, [album.ALBUM_FOLDER_ID]);
     deleteRowById("GALLERY_PHOTOS", "PHOTO_ID", photo.PHOTO_ID);
@@ -1177,10 +1197,13 @@ function getAlbumsWithPhotoCount() {
     var storedPhotos = photos.filter(function (photo) {
       return photo.ALBUM_ID === album.ALBUM_ID;
     });
-    var linkedPhotos = getSharedAlbumPhotos(album, storedPhotos);
-    album.PHOTO_COUNT = mergeAlbumPhotos(storedPhotos, linkedPhotos).length;
-    if (!album.COVER_PHOTO_URL && linkedPhotos.length) {
-      album.COVER_PHOTO_URL = linkedPhotos[0].THUMBNAIL_URL || linkedPhotos[0].IMAGE_URL;
+    var firstLinkedPage = getSharedAlbumPhotos(album, storedPhotos, {
+      offset: 0,
+      pageSize: 1
+    });
+    album.PHOTO_COUNT = storedPhotos.length + getSharedAlbumPhotoCount(album);
+    if (!album.COVER_PHOTO_URL && firstLinkedPage.length) {
+      album.COVER_PHOTO_URL = firstLinkedPage[0].THUMBNAIL_URL || firstLinkedPage[0].IMAGE_URL;
     }
     return album;
   });
@@ -1190,14 +1213,60 @@ function ensureGalleryAlbumSchema() {
   ensureSheet(getSpreadsheet(), "GALLERY_ALBUMS", SHEET_HEADERS.GALLERY_ALBUMS);
 }
 
-function getAlbumPhotoRows(albumId, album) {
-  var storedPhotos = getRows("GALLERY_PHOTOS")
+function getStoredAlbumPhotoRows(albumId) {
+  return getRows("GALLERY_PHOTOS")
     .filter(function (photo) {
       return photo.ALBUM_ID === albumId;
     })
     .sort(sortByDisplayOrder);
+}
+
+function getAlbumPhotoRows(albumId, album) {
+  return getAlbumPhotoPage(albumId, album, {
+    offset: 0,
+    pageSize: LINKED_ALBUM_PAGE_SIZE
+  }).photos;
+}
+
+function getAlbumPhotoPage(albumId, album, page) {
+  var storedPhotos = getStoredAlbumPhotoRows(albumId);
   album = album || findRowById("GALLERY_ALBUMS", "ALBUM_ID", albumId);
-  return mergeAlbumPhotos(storedPhotos, getSharedAlbumPhotos(album, storedPhotos));
+  page = page || {};
+  var offset = Math.max(0, Number(page.offset || 0));
+  var pageSize = Math.max(
+    1,
+    Math.min(Number(page.pageSize || LINKED_ALBUM_PAGE_SIZE), LINKED_ALBUM_PAGE_SIZE)
+  );
+  var photos = [];
+
+  if (offset < storedPhotos.length) {
+    photos = storedPhotos.slice(offset, offset + pageSize);
+  }
+
+  var remaining = pageSize - photos.length;
+  if (remaining > 0) {
+    var linkedOffset = Math.max(0, offset - storedPhotos.length);
+    photos = photos.concat(
+      getSharedAlbumPhotos(album, storedPhotos, {
+        offset: linkedOffset,
+        pageSize: remaining
+      })
+    );
+  }
+
+  photos = mergeAlbumPhotos([], photos);
+  var totalCount = storedPhotos.length + getSharedAlbumPhotoCount(album);
+  var nextOffset = offset + photos.length;
+  return {
+    photos: photos,
+    page: {
+      offset: offset,
+      pageSize: pageSize,
+      nextOffset: nextOffset,
+      hasMore: nextOffset < totalCount,
+      totalCount: totalCount
+    }
+  };
 }
 
 function mergeAlbumPhotos(storedPhotos, linkedPhotos) {
@@ -1226,7 +1295,7 @@ function mergeAlbumPhotos(storedPhotos, linkedPhotos) {
   return merged.sort(sortByDisplayOrder);
 }
 
-function getSharedAlbumPhotos(album, storedPhotos) {
+function getSharedAlbumPhotos(album, storedPhotos, pageOptions) {
   if (!album || !album.DRIVE_FOLDER_URL) {
     return [];
   }
@@ -1236,8 +1305,14 @@ function getSharedAlbumPhotos(album, storedPhotos) {
     return [];
   }
 
+  pageOptions = pageOptions || {};
+  var offset = Math.max(0, Number(pageOptions.offset || 0));
+  var pageSize = Math.max(
+    1,
+    Math.min(Number(pageOptions.pageSize || LINKED_ALBUM_PAGE_SIZE), LINKED_ALBUM_PAGE_SIZE)
+  );
   var cache = CacheService.getScriptCache();
-  var cacheKey = linkedAlbumCacheKey(albumUrl);
+  var cacheKey = linkedAlbumCacheKey(albumUrl, offset, pageSize);
   var cached = cache.get(cacheKey);
   if (cached) {
     try {
@@ -1248,8 +1323,8 @@ function getSharedAlbumPhotos(album, storedPhotos) {
   }
 
   var photos = extractDriveFolderId(albumUrl)
-    ? getDriveFolderPhotos(album, albumUrl, storedPhotos || [])
-    : getGooglePhotosSharedPhotos(album, albumUrl, storedPhotos || []);
+    ? getDriveFolderPhotos(album, albumUrl, storedPhotos || [], offset, pageSize)
+    : getGooglePhotosSharedPhotos(album, albumUrl, storedPhotos || [], offset, pageSize);
 
   try {
     cache.put(cacheKey, JSON.stringify(photos), 300);
@@ -1259,7 +1334,34 @@ function getSharedAlbumPhotos(album, storedPhotos) {
   return photos;
 }
 
-function getDriveFolderPhotos(album, albumUrl, storedPhotos) {
+function getSharedAlbumPhotoCount(album) {
+  if (!album || !album.DRIVE_FOLDER_URL) {
+    return 0;
+  }
+
+  var albumUrl = sanitizeUrl(album.DRIVE_FOLDER_URL);
+  if (!albumUrl) {
+    return 0;
+  }
+
+  var cache = CacheService.getScriptCache();
+  var cacheKey = linkedAlbumCacheKey(albumUrl, "count", 0);
+  var cached = cache.get(cacheKey);
+  if (cached !== null) {
+    return Number(cached || 0);
+  }
+
+  var count = extractDriveFolderId(albumUrl)
+    ? countDriveFolderPhotos(albumUrl)
+    : countGooglePhotosSharedPhotos(albumUrl);
+
+  try {
+    cache.put(cacheKey, String(count), 300);
+  } catch (error) {}
+  return count;
+}
+
+function getDriveFolderPhotos(album, albumUrl, storedPhotos, offset, pageSize) {
   var folderId = extractDriveFolderId(albumUrl);
   if (!folderId) {
     return [];
@@ -1274,11 +1376,21 @@ function getDriveFolderPhotos(album, albumUrl, storedPhotos) {
 
   var files = folder.getFiles();
   var photos = [];
-  var order = (storedPhotos || []).length + 1;
-  while (files.hasNext() && photos.length < MAX_LINKED_ALBUM_IMAGES) {
+  var skipped = 0;
+  offset = Math.max(0, Number(offset || 0));
+  pageSize = Math.max(
+    1,
+    Math.min(Number(pageSize || LINKED_ALBUM_PAGE_SIZE), LINKED_ALBUM_PAGE_SIZE)
+  );
+  var order = (storedPhotos || []).length + offset + 1;
+  while (files.hasNext() && photos.length < pageSize) {
     var file = files.next();
     var mimeType = file.getMimeType();
     if (!isImageMimeType(mimeType)) {
+      continue;
+    }
+    if (skipped < offset) {
+      skipped++;
       continue;
     }
 
@@ -1305,7 +1417,64 @@ function getDriveFolderPhotos(album, albumUrl, storedPhotos) {
   return photos;
 }
 
-function getGooglePhotosSharedPhotos(album, albumUrl, storedPhotos) {
+function countDriveFolderPhotos(albumUrl) {
+  var folderId = extractDriveFolderId(albumUrl);
+  if (!folderId) {
+    return 0;
+  }
+
+  var folder;
+  try {
+    folder = DriveApp.getFolderById(folderId);
+  } catch (error) {
+    return 0;
+  }
+
+  var files = folder.getFiles();
+  var count = 0;
+  while (files.hasNext()) {
+    if (isImageMimeType(files.next().getMimeType())) {
+      count++;
+    }
+  }
+  return count;
+}
+
+function getGooglePhotosSharedPhotos(album, albumUrl, storedPhotos, offset, pageSize) {
+  var html = fetchGooglePhotosHtml(albumUrl);
+  if (!html) {
+    return [];
+  }
+
+  offset = Math.max(0, Number(offset || 0));
+  pageSize = Math.max(
+    1,
+    Math.min(Number(pageSize || LINKED_ALBUM_PAGE_SIZE), LINKED_ALBUM_PAGE_SIZE)
+  );
+
+  var imageUrls = extractGooglePhotosImageUrls(html);
+  var order = (storedPhotos || []).length + offset + 1;
+  return imageUrls.slice(offset, offset + pageSize).map(function (imageUrl, index) {
+    return linkedAlbumPhoto(album, {
+      sourceId: "google-photo-" + (offset + index),
+      driveFileId: "",
+      driveFolderId: "",
+      fileName: "google-photo-" + (offset + index + 1) + ".jpg",
+      mimeType: "image/jpeg",
+      imageUrl: googlePhotoSizedUrl(imageUrl, "w1600-h1200"),
+      thumbnailUrl: googlePhotoSizedUrl(imageUrl, "w900-h700"),
+      caption: "",
+      order: order++
+    });
+  });
+}
+
+function countGooglePhotosSharedPhotos(albumUrl) {
+  var html = fetchGooglePhotosHtml(albumUrl);
+  return html ? extractGooglePhotosImageUrls(html).length : 0;
+}
+
+function fetchGooglePhotosHtml(albumUrl) {
   var response;
   try {
     response = UrlFetchApp.fetch(albumUrl, {
@@ -1320,24 +1489,10 @@ function getGooglePhotosSharedPhotos(album, albumUrl, storedPhotos) {
   }
 
   if (response.getResponseCode() >= 400) {
-    return [];
+    return "";
   }
 
-  var imageUrls = extractGooglePhotosImageUrls(response.getContentText());
-  var order = (storedPhotos || []).length + 1;
-  return imageUrls.slice(0, MAX_LINKED_ALBUM_IMAGES).map(function (imageUrl, index) {
-    return linkedAlbumPhoto(album, {
-      sourceId: "google-photo-" + index,
-      driveFileId: "",
-      driveFolderId: "",
-      fileName: "google-photo-" + (index + 1) + ".jpg",
-      mimeType: "image/jpeg",
-      imageUrl: googlePhotoSizedUrl(imageUrl, "w1600-h1200"),
-      thumbnailUrl: googlePhotoSizedUrl(imageUrl, "w900-h700"),
-      caption: "",
-      order: order++
-    });
-  });
+  return response.getContentText();
 }
 
 function linkedAlbumPhoto(album, source) {
@@ -1422,8 +1577,9 @@ function isImageMimeType(mimeType) {
   return /^image\//i.test(String(mimeType || ""));
 }
 
-function linkedAlbumCacheKey(url) {
-  return "linkedAlbum:" + Utilities.base64EncodeWebSafe(String(url || "")).slice(0, 90);
+function linkedAlbumCacheKey(url, offset, pageSize) {
+  var rawKey = [String(url || ""), String(offset || 0), String(pageSize || "")].join(":");
+  return "linkedAlbum:" + Utilities.base64EncodeWebSafe(rawKey).slice(0, 90);
 }
 
 function getEventPhotoRows(eventId) {

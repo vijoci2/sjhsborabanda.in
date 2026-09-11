@@ -90,7 +90,7 @@ export default function AdmissionsPage() {
               Schedule a Campus Visit / Contact Administration
             </h2>
             <p className="mt-3 leading-7 text-white/75">
-              Contact {school.phone} or {school.email} during office timings
+              Call <a href={"tel:" + school.phone.replace(/\s/g, "")} className="underline">{school.phone}</a> during office timings
               for public admissions guidance and campus visit coordination.
             </p>
           </div>

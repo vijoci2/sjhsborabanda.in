@@ -42,7 +42,7 @@ export default function AcademicsPage() {
                   src={level.image}
                   alt={level.title}
                   fallbackLabel={level.title}
-                  className="h-80 w-full object-cover lg:h-full"
+                  className="aspect-[3/2] w-full self-center bg-mist object-contain"
                 />
                 <div className="p-8">
                   <h2 className="text-3xl font-bold text-navy">{level.title}</h2>

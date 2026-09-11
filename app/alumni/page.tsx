@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
 import { ContactForm } from "@/components/Forms/ContactForm";
 import { SectionTitle } from "@/components/UI/SectionTitle";
-import { alumniStories } from "@/lib/data";
+import { SmartImage } from "@/components/UI/SmartImage";
 
 export const metadata: Metadata = {
   title: "Alumni",
   description:
-    "Alumni memories, achievements, and registration UI for St. Joseph's High School."
+            "Stay connected with the St. Joseph's High School community."
 };
 
 export default function AlumniPage() {
@@ -28,19 +28,8 @@ export default function AlumniPage() {
         <div className="site-container grid gap-10 lg:grid-cols-[0.9fr_1.1fr]">
           <div>
             <SectionTitle align="left" title="Alumni Memories" />
-            <div className="grid gap-5">
-              {alumniStories.map((story) => (
-                <article key={story.name} className="rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
-                  <p className="text-sm font-bold uppercase tracking-[0.14em] text-gold">
-                    {story.role}
-                  </p>
-                  <h2 className="mt-3 text-2xl font-bold text-navy">
-                    {story.name}
-                  </h2>
-                  <p className="mt-3 leading-7 text-slate-600">{story.quote}</p>
-                </article>
-              ))}
-            </div>
+            <SmartImage src="/images/gallery/gallery-1.jpg" alt="Students taking part in school activities at St. Joseph's" className="aspect-[3/2] w-full rounded-lg object-contain" />
+            <p className="mt-5 leading-7 text-slate-600">Reconnect with the school, share your memories, or tell us where your journey has taken you.</p>
           </div>
           <ContactForm mode="alumni" />
         </div>

@@ -4,7 +4,7 @@ import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://st-josephs-borabanda.vercel.app"),
+  metadataBase: new URL("https://sjhsborabanda.in"),
   title: {
     default: "St. Joseph's High School, Borabanda, Hyderabad",
     template: "%s | St. Joseph's High School"
@@ -20,7 +20,7 @@ export const metadata: Metadata = {
     title: "St. Joseph's High School",
     description:
       "Educating Minds. Building Character. Inspiring Futures.",
-    url: "https://st-josephs-borabanda.vercel.app",
+    url: "https://sjhsborabanda.in",
     siteName: "St. Joseph's High School",
     images: [
       {
@@ -43,8 +43,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
+        <a href="#main-content" className="sr-only z-[100] bg-white p-4 text-navy focus:not-sr-only focus:fixed focus:left-4 focus:top-4">Skip to content</a>
         <Header />
-        <main>{children}</main>
+        <main id="main-content">{children}</main>
         <Footer />
       </body>
     </html>
