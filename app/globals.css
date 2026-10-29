@@ -107,7 +107,7 @@ img { max-width: 100%; }
   .section-heading { align-items: start; flex-direction: column; gap: 20px; }
   .section-headline, .section-heading h2 { font-size: 30px; }
   .school-hero h1 { font-size: 40px; }
-  .hero-photo { object-position: 67% center; }
+  .hero-photo { object-position: 90% center; }
   .hero-shade { background: rgba(7,24,29,.65); }
   .campus-photos { gap: 12px; }
   .campus-details { margin-top: 12px; padding-top: 12px; }
