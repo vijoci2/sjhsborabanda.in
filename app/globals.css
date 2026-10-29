@@ -57,9 +57,9 @@ textarea {
 html { scroll-padding-top: 112px; }
 h1, h2, h3, h4, p, a { overflow-wrap: break-word; letter-spacing: 0; }
 img { max-width: 100%; }
-/* Slightly lift the exposure of these two photos wherever they appear. */
-img[src="/images/director.jpg"] { filter: brightness(1.12); }
-img[src="/images/classrooms/classroom.jpg"] { filter: brightness(1.2); }
+/* Brighten only the two selected homepage cards. */
+.home-leadership img[src="/images/director.jpg"] { filter: brightness(1.12); }
+.home-academic-levels img[src="/images/classrooms/classroom.jpg"] { filter: brightness(1.2); }
 .eyebrow { color: #806214; font-size: 12px; line-height: 1.6; font-weight: 700; text-transform: uppercase; }
 .section-headline, .section-heading h2 { color: var(--primary-navy); font-size: 36px; line-height: 1.2; font-weight: 700; }
 .section-heading { display: flex; align-items: end; justify-content: space-between; gap: 24px; margin-bottom: 32px; }

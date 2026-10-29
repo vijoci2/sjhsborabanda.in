@@ -26,7 +26,7 @@ export default function Home() {
         </div>
       </section>
       <SchoolCampuses />
-      <section className="section-y bg-white">
+      <section className="home-academic-levels section-y bg-white">
         <div className="site-container">
           <div className="section-heading">
             <div><p className="eyebrow">Every stage of learning</p><h2>A Strong Foundation for Life</h2></div>
@@ -46,7 +46,7 @@ export default function Home() {
           </div>
         </div>
       </section>
-      <section id="leadership" className="section-y border-y border-slate-200 bg-mist">
+      <section id="leadership" className="home-leadership section-y border-y border-slate-200 bg-mist">
         <div className="site-container">
           <div className="section-heading">
             <div><p className="eyebrow">People behind our school</p><h2>Our Leadership Team</h2></div>
